@@ -30,6 +30,7 @@ import string
 
 from SCons.Script import *
 from utils import _make_path_relative
+from mkdist import do_copy_file
 
 BuildOptions = {}
 Projects = []
@@ -122,7 +123,7 @@ def PrepareBuilding(env, root_directory, has_libcpu=False, remove_components = [
     global Rtt_Root
 
     Env = env
-    Rtt_Root = root_directory
+    Rtt_Root = os.path.abspath(root_directory)
 
     # add compability with Keil MDK 4.6 which changes the directory of armcc.exe
     if rtconfig.PLATFORM == 'armcc':
@@ -290,16 +291,6 @@ def PrepareBuilding(env, root_directory, has_libcpu=False, remove_components = [
             CXXCOMSTR = 'CXX $TARGET',
             LINKCOMSTR = 'LINK $TARGET'
         )
-
-    AddOption('--menuconfig',
-                      dest='menuconfig',
-                      action='store_true',
-                      default=False,
-                      help='do the system configuration')
-
-    if GetOption('menuconfig'):
-        from menuconfig import config
-        config()
 
     # we need to seperate the variant_dir for BSPs and the kernels. BSPs could
     # have their own components etc. If they point to the same folder, SCons

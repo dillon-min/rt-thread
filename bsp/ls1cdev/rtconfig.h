@@ -227,6 +227,17 @@
 #define RTGUI_IMAGE_BMP
 // </section>
 
+#define RT_USING_SPI
+#define RT_USING_SPI0
+#define RT_USING_SPI1
+
+#define RT_USING_I2C
+#define RT_USING_I2C_BITOPS
+
+
+#define RT_USING_PIN
+
+
 // </RDTConfigurator>
 
 #endif
