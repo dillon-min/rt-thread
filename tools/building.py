@@ -74,7 +74,6 @@ PatchedPreProcessor = SCons.cpp.PreProcessor
 PatchedPreProcessor.start_handling_includes = start_handling_includes
 PatchedPreProcessor.stop_handling_includes = stop_handling_includes
 
-
 class Win32Spawn:
     def spawn(self, sh, escape, cmd, args, env):
         # deal with the cmd build-in commands which cannot be used in
@@ -124,6 +123,7 @@ def PrepareBuilding(env, root_directory, has_libcpu=False, remove_components = [
 
     Env = env
     Rtt_Root = os.path.abspath(root_directory)
+    sys.path = sys.path + [os.path.join(Rtt_Root, 'tools')]
 
     # add compability with Keil MDK 4.6 which changes the directory of armcc.exe
     if rtconfig.PLATFORM == 'armcc':
@@ -168,6 +168,31 @@ def PrepareBuilding(env, root_directory, has_libcpu=False, remove_components = [
     f.close()
     PreProcessor.process_contents(contents)
     BuildOptions = PreProcessor.cpp_namespace
+
+    if rtconfig.PLATFORM == 'gcc':
+        contents = ''
+        if not os.path.isfile('cconfig.h'):
+            import gcc
+            gcc.GenerateGCCConfig(rtconfig)
+
+        # try again
+        if os.path.isfile('cconfig.h'):
+            f = file('cconfig.h', 'r')
+            if f:
+                contents = f.read()
+                f.close();
+
+                prep = PatchedPreProcessor()
+                prep.process_contents(contents)
+                options = prep.cpp_namespace
+
+                BuildOptions.update(options)
+
+                # add HAVE_CCONFIG_H definition
+                env.AppendUnique(CPPDEFINES = ['HAVE_CCONFIG_H'])
+
+        if str(env['LINKFLAGS']).find('nano.specs') != -1:
+            env.AppendUnique(CPPDEFINES = ['_REENT_SMALL'])
 
     # add copy option
     AddOption('--copy',
@@ -274,6 +299,27 @@ def PrepareBuilding(env, root_directory, has_libcpu=False, remove_components = [
         genconfig()
         exit(0)
 
+    if env['PLATFORM'] != 'win32':
+        AddOption('--menuconfig', 
+                    dest = 'menuconfig',
+                    action = 'store_true',
+                    default = False,
+                    help = 'make menuconfig for RT-Thread BSP')
+        if GetOption('menuconfig'):
+            from menuconfig import menuconfig
+            menuconfig(Rtt_Root)
+            exit(0)
+
+    AddOption('--useconfig',
+                dest = 'useconfig',
+                type='string',
+                help = 'make rtconfig.h from config file.')
+    configfn = GetOption('useconfig')
+    if configfn:
+        from menuconfig import mk_rtconfig
+        mk_rtconfig(configfn)
+        exit(0)
+
     # add comstr option
     AddOption('--verbose',
                 dest='verbose',
@@ -291,6 +337,11 @@ def PrepareBuilding(env, root_directory, has_libcpu=False, remove_components = [
             CXXCOMSTR = 'CXX $TARGET',
             LINKCOMSTR = 'LINK $TARGET'
         )
+
+    # fix the linker for C++
+    if GetDepend('RT_USING_CPLUSPLUS'):
+        if env['LINK'].find('gcc') != -1:
+            env['LINK'] = env['LINK'].replace('gcc', 'g++')
 
     # we need to seperate the variant_dir for BSPs and the kernels. BSPs could
     # have their own components etc. If they point to the same folder, SCons
@@ -642,6 +693,10 @@ def EndBuilding(target, program = None):
     import rtconfig
 
     Env.AddPostAction(target, rtconfig.POST_ACTION)
+    # Add addition clean files
+    Clean(target, 'cconfig.h')
+    Clean(target, 'rtua.py')
+    Clean(target, 'rtua.pyc')
 
     if GetOption('target') == 'mdk':
         from keil import MDKProject
@@ -713,11 +768,20 @@ def SrcRemove(src, remove):
 
     for item in src:
         if type(item) == type('str'):
-            if os.path.basename(item) in remove:
+            item_str = item
+        else:
+            item_str = item.rstr()
+
+        if os.path.isabs(item_str):
+            item_str = os.path.relpath(item_str, GetCurrentDir())
+
+        if type(remove) == type('str'):
+            if item_str == remove:
                 src.remove(item)
         else:
-            if os.path.basename(item.rstr()) in remove:
-                src.remove(item)
+            for remove_item in remove:
+                if item_str == str(remove_item):
+                    src.remove(item)
 
 def GetVersion():
     import SCons.cpp

@@ -12,13 +12,13 @@ if os.getenv('RTT_CC'):
 # EXEC_PATH is the compiler execute path, for example, CodeSourcery, Keil MDK, IAR
 if  CROSS_TOOL == 'gcc':
     PLATFORM    = 'gcc'
-    EXEC_PATH   = r'D:\Program Files (x86)\GNU Tools ARM Embedded\5.4 2016q3\bin'
+    EXEC_PATH   = '/usr/local/Cellar/arm-none-eabi-gcc/7-2017-q4-major/gcc/bin/'
 elif CROSS_TOOL == 'keil':
 	PLATFORM 	= 'armcc'
 	EXEC_PATH 	= 'C:/Keil_v5'
 elif CROSS_TOOL == 'iar':
     PLATFORM 	= 'iar'
-    IAR_PATH    = r'C:/Program Files (x86)/IAR Systems/Embedded Workbench 8.0'
+    EXEC_PATH    = r'C:/Program Files (x86)/IAR Systems/Embedded Workbench 8.0'
 
 if os.getenv('RTT_EXEC_PATH'):
 	EXEC_PATH = os.getenv('RTT_EXEC_PATH')
@@ -34,27 +34,28 @@ if PLATFORM == 'gcc':
     AS = PREFIX + 'gcc'
     AR = PREFIX + 'ar'
     LINK = PREFIX + 'gcc'
-    TARGET_EXT = 'axf'
+    TARGET_EXT = 'elf'
     SIZE = PREFIX + 'size'
     OBJDUMP = PREFIX + 'objdump'
     OBJCPY = PREFIX + 'objcopy'
     STRIP = PREFIX + 'strip'
 
-    DEVICE = ' -std=c99 -mcpu=cortex-m7 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=softfp -ffunction-sections -fdata-sections'
-    CFLAGS = DEVICE + ' -g -Wall -DUSE_HAL_DRIVER -D__ASSEMBLY__ -D__FPU_USED -eentry'
+    DEVICE = ' -mcpu=cortex-m7 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -ffunction-sections -fdata-sections'
+    CFLAGS = DEVICE + ' -std=c99 -Wall -D__FPU_PRESENT -eentry'
     AFLAGS = ' -c' + DEVICE + ' -x assembler-with-cpp -Wa,-mimplicit-it=thumb '
-    LFLAGS = DEVICE + ' -lm -lgcc -lc' + ' -nostartfiles -Wl,--gc-sections,-Map=imxrt1052_sdram.map,-cref,-u,Reset_Handler -T imxrt1052_sdram.ld'
+    LFLAGS = DEVICE + ' -lm -lgcc -lc' + ' -nostartfiles -Wl,--gc-sections,-Map=rtthread-imxrt-gcc.map,-cref,-u,Reset_Handler -T ./Libraries/gcc/MIMXRT1052xxxxx_flexspi_nor.ld'
 
     CPATH = ''
     LPATH = ''
 
     if BUILD == 'debug':
-        CFLAGS += ' -O0 -gdwarf-2'
+        CFLAGS += ' -gdwarf-2'
         AFLAGS += ' -gdwarf-2'
+        CFLAGS += ' -O0'
     else:
         CFLAGS += ' -O2 -Os'
 
-    POST_ACTION = OBJCPY + ' -O binary $TARGET rtthread.bin\n' + SIZE + ' $TARGET \n'
+    POST_ACTION = OBJCPY + ' -O binary --remove-section=.boot_data --remove-section=.image_vertor_table --remove-section=.ncache $TARGET rtthread.bin\n' + SIZE + ' $TARGET \n'
 
     # module setting 
     CXXFLAGS = ' -Woverloaded-virtual -fno-exceptions -fno-rtti '
@@ -67,6 +68,7 @@ if PLATFORM == 'gcc':
 elif PLATFORM == 'armcc':
     # toolchains
     CC = 'armcc'
+    CXX = 'armcc'
     AS = 'armasm'
     AR = 'armar'
     LINK = 'armlink'
@@ -75,9 +77,9 @@ elif PLATFORM == 'armcc':
     DEVICE = ' --cpu Cortex-M7.fp.sp'
     CFLAGS = DEVICE + ' --apcs=interwork'
     AFLAGS = DEVICE
-    LFLAGS = DEVICE + ' --info sizes --info totals --info unused --info veneers --list rtthread-imxrt.map --scatter imxrt1052_sdram.sct'
+    LFLAGS = DEVICE + ' --libpath "' + EXEC_PATH + '\ARM\ARMCC\lib" --info sizes --info totals --info unused --info veneers --list rtthread-imxrt-mdk.map --scatter ./Libraries/arm/MIMXRT1052xxxxx_flexspi_nor.scf'
 
-    CFLAGS += ' --c99  --diag_suppress=66,1296,186'
+    CFLAGS += ' --diag_suppress=66,1296,186'
     CFLAGS += ' -I' + EXEC_PATH + '/ARM/RV31/INC'
     LFLAGS += ' --libpath ' + EXEC_PATH + '/ARM/RV31/LIB'
 
@@ -89,17 +91,22 @@ elif PLATFORM == 'armcc':
     else:
         CFLAGS += ' -O2'
 
-    POST_ACTION = 'fromelf --bin $TARGET --output rtthread.bin \nfromelf -z $TARGET'
+    CXXFLAGS = CFLAGS
+    CFLAGS += ' --c99'
+
+    POST_ACTION = 'fromelf -z $TARGET'
+    # POST_ACTION = 'fromelf --bin $TARGET --output rtthread.bin \nfromelf -z $TARGET'
 
 elif PLATFORM == 'iar':
     # toolchains
     CC = 'iccarm'
+    CXX = 'iccarm'
     AS = 'iasmarm'
     AR = 'iarchive'
     LINK = 'ilinkarm'
     TARGET_EXT = 'out'
 
-    DEVICE = ' -D USE_STDPERIPH_DRIVER'
+    DEVICE = ' -D__FPU_PRESENT'
 
     CFLAGS = DEVICE
     CFLAGS += ' --diag_suppress Pa050'
@@ -115,9 +122,11 @@ elif PLATFORM == 'iar':
     CFLAGS += ' --cpu=Cortex-M7'
     CFLAGS += ' -e'
     CFLAGS += ' --fpu=None'
-    CFLAGS += ' --dlib_config "' + IAR_PATH + '/arm/INC/c/DLib_Config_Normal.h"'
+    CFLAGS += ' --dlib_config "' + EXEC_PATH + '/arm/INC/c/DLib_Config_Normal.h"'
     CFLAGS += ' -Ol'
     CFLAGS += ' --use_c++_inline'
+
+    CXXFLAGS = CFLAGS
 
     AFLAGS = ''
     AFLAGS += ' -s+'
@@ -126,10 +135,10 @@ elif PLATFORM == 'iar':
     AFLAGS += ' --cpu Cortex-M7'
     AFLAGS += ' --fpu None'
 
-    LFLAGS = ' --config imxrt1052_sdram.icf'
+    LFLAGS = ' --config ./Libraries/iar/MIMXRT1052xxxxx_flexspi_nor.icf'
     LFLAGS += ' --redirect _Printf=_PrintfTiny'
     LFLAGS += ' --redirect _Scanf=_ScanfSmall'
     LFLAGS += ' --entry __iar_program_start'
 
-    EXEC_PATH = IAR_PATH + '/arm/bin/'
+    EXEC_PATH = EXEC_PATH + '/arm/bin/'
     POST_ACTION = ''

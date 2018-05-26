@@ -22,3 +22,5 @@ documentation/html
 *.a
 *.i
 *.d
+tools/kconfig-frontends/kconfig-mconf
+packages

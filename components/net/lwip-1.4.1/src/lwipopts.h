@@ -36,7 +36,10 @@
 #define LWIP_HAVE_LOOPIF            0
 
 #define LWIP_PLATFORM_BYTESWAP      0
+
+#ifndef BYTE_ORDER
 #define BYTE_ORDER                  LITTLE_ENDIAN
+#endif
 
 /* #define RT_LWIP_DEBUG */
 
@@ -92,6 +95,11 @@
    sends a lot of data out of ROM (or other static memory), this
    should be set high. */
 #define MEMP_NUM_PBUF               16
+
+/* the number of struct netconns */
+#ifdef RT_MEMP_NUM_NETCONN
+#define MEMP_NUM_NETCONN            RT_MEMP_NUM_NETCONN
+#endif
 
 /* the number of UDP protocol control blocks. One per active RAW "connection". */
 #ifdef RT_LWIP_RAW_PCB_NUM
