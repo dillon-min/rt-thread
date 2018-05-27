@@ -53,9 +53,8 @@ STACK_SIZE = DEFINED(__stack_size__) ? __stack_size__ : 0x0400;
 /* Specify the memory areas */
 MEMORY
 {
-  m_boot_data           (RX)  : ORIGIN = 0x60000000, LENGTH = 0x00000400
-  m_image_vertor_table  (RX)  : ORIGIN = 0x60001000, LENGTH = 0x00000400
-
+  m_flash_config        (RX)  : ORIGIN = 0x60000000, LENGTH = 0x00001000
+  m_ivt                 (RX)  : ORIGIN = 0x60001000, LENGTH = 0x00001000
   m_interrupts          (RX)  : ORIGIN = 0x60002000, LENGTH = 0x00000400
   m_text                (RX)  : ORIGIN = 0x60002400, LENGTH = 0x1F7FDC00
 
@@ -70,15 +69,24 @@ MEMORY
 /* Define output sections */
 SECTIONS
 {
-  .boot_data :
+  .flash_config :
   {
-    KEEP(*(.bootdata))
-  } > m_boot_data
+    . = ALIGN(4);
+    __FLASH_BASE = .;
+    KEEP(* (.boot_hdr.conf))     /* flash config section */
+    . = ALIGN(4);
+  } > m_flash_config
 
-  .image_vertor_table :
+  ivt_begin= ORIGIN(m_flash_config) + LENGTH(m_flash_config);
+
+  .ivt : AT(ivt_begin)
   {
-    KEEP(*(.ivt))
-  } > m_image_vertor_table
+    . = ALIGN(4);
+	KEEP(* (.boot_hdr.ivt))           /* ivt section */
+	KEEP(* (.boot_hdr.boot_data))     /* boot section */
+	KEEP(* (.boot_hdr.dcd_data))      /* dcd section */
+    . = ALIGN(4);
+  } > m_ivt
 
   /* The startup code goes first into internal RAM */
   .interrupts :

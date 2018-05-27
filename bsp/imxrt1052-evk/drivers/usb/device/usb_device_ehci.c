@@ -60,7 +60,7 @@ static usb_status_t USB_DeviceEhciEndpointInit(usb_device_ehci_state_struct_t *e
 static usb_status_t USB_DeviceEhciEndpointDeinit(usb_device_ehci_state_struct_t *ehciState, uint8_t ep);
 static usb_status_t USB_DeviceEhciEndpointStall(usb_device_ehci_state_struct_t *ehciState, uint8_t ep);
 static usb_status_t USB_DeviceEhciEndpointUnstall(usb_device_ehci_state_struct_t *ehciState, uint8_t ep);
-static void USB_DeviceEhciFillSetupBuffer(usb_device_ehci_state_struct_t *ehciState, uint8_t ep);
+static uint8_t USB_DeviceEhciFillSetupBuffer(usb_device_ehci_state_struct_t *ehciState, uint8_t ep);
 static void USB_DeviceEhciCancelControlPipe(usb_device_ehci_state_struct_t *ehciState,
                                             uint8_t endpoint,
                                             uint8_t direction);
@@ -431,7 +431,7 @@ static usb_status_t USB_DeviceEhciEndpointUnstall(usb_device_ehci_state_struct_t
  * @param ep               The endpoint number.
  *
  */
-static void USB_DeviceEhciFillSetupBuffer(usb_device_ehci_state_struct_t *ehciState, uint8_t ep)
+static uint8_t USB_DeviceEhciFillSetupBuffer(usb_device_ehci_state_struct_t *ehciState, uint8_t ep)
 {
     uint8_t waitingSafelyAccess = 1U;
     uint8_t index = (ep * 2U) | USB_OUT;
@@ -458,9 +458,11 @@ static void USB_DeviceEhciFillSetupBuffer(usb_device_ehci_state_struct_t *ehciSt
     ehciState->registerBase->USBCMD &= ~USBHS_USBCMD_SUTW_MASK;
 
     /* Poll until the EPSETUPSR bit clearred */
-    while (ehciState->registerBase->EPSETUPSR & (1U << ep))
+    if (ehciState->registerBase->EPSETUPSR & (1U << ep))
     {
+    	return 0;
     }
+    return 1;
 }
 
 /*!
@@ -589,9 +591,10 @@ static void USB_DeviceEhciInterruptTokenDone(usb_device_ehci_state_struct_t *ehc
                 message.length = USB_SETUP_PACKET_SIZE;
                 message.isSetup = 1U;
                 /* Fill the setup packet to the backup buffer */
-                USB_DeviceEhciFillSetupBuffer(ehciState, endpoint);
+                if (USB_DeviceEhciFillSetupBuffer(ehciState, endpoint)) {
                 /* Notify the up layer the EHCI status changed. */
                 USB_DeviceNotificationTrigger(ehciState->deviceHandle, &message);
+				}
             }
         }
     }
@@ -905,7 +908,7 @@ static usb_status_t USB_DeviceEhciTransfer(usb_device_ehci_state_struct_t *ehciS
                       USB_DESCRIPTOR_ENDPOINT_ADDRESS_DIRECTION_SHIFT);
     uint32_t primeBit = 1U << ((endpointAddress & USB_ENDPOINT_NUMBER_MASK) +
                                ((endpointAddress & USB_DESCRIPTOR_ENDPOINT_ADDRESS_DIRECTION_MASK) >> 0x03U));
-    uint8_t epStatus = primeBit;
+    uint32_t epStatus = primeBit;
     uint32_t sendLength;
     uint32_t currentIndex = 0U;
     uint32_t dtdRequestCount = (length + USB_DEVICE_ECHI_DTD_TOTAL_BYTES - 1U) / USB_DEVICE_ECHI_DTD_TOTAL_BYTES;

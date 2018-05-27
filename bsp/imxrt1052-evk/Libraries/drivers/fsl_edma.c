@@ -712,6 +712,10 @@ status_t EDMA_SubmitTransfer(edma_handle_t *handle, const edma_transfer_config_t
             if (tcdRegs->DLAST_SGA == (uint32_t)&handle->tcdPool[currentTcd])
             {
                 /* Enable scatter/gather also in the TCD registers. */
+                if (tcdRegs->CSR & DMA_CSR_DONE_MASK) {
+   	                    csr = tcdRegs->CSR & ~DMA_CSR_DONE_MASK;
+                        tcdRegs->CSR = csr;
+                }
                 csr = (tcdRegs->CSR | DMA_CSR_ESG_MASK) & ~DMA_CSR_DREQ_MASK;
                 /* Must write the CSR register one-time, because the transfer maybe finished anytime. */
                 tcdRegs->CSR = csr;
