@@ -35,6 +35,7 @@ note:
 3, rootfs on spi flash failed, seems kernel/spi driver working failed.
 4, currently art.itb is included with initramfs created from buildroot.
 
+buildroot: username root, no password just press enter
 
 
 
