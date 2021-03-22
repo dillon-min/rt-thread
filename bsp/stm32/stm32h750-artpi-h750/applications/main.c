@@ -5,7 +5,7 @@
  *
  * Change Logs:
  * Date           Author       Notes
- * 2019-10-25     zylx         first version
+ * 2021-03-17     supperthomas first version
  * 2021-03-22     dillon       add support for u-boot/kernel/rootfs install
  *                             jump to u-boot, load kernel
  */
