@@ -13,25 +13,23 @@ CubeMX_Config/Src/stm32f4xx_hal_msp.c
 ''')
 
 if GetDepend(['BSP_USING_QSPI_FLASH']):
-    src += ['ports/drv_qspi_flash.c']
+    src += Glob('ports/drv_qspi_flash.c')
+    src += Glob('ports/w25qxx.c')
+
+if GetDepend(['BSP_USING_SPI_FLASH']):
+    src += Glob('ports/drv_spi_flash.c')
+
+if GetDepend(['FAL_USING_SFUD_PORT_LOCAL']):
+    src += Glob('ports/fal_qspi_flash.c')
+    src += Glob('ports/fal_flash_sfud_port.c')
 
 if GetDepend(['PKG_USING_FAL']):
-    src += ['ports/qspi_mnt.c']
-    
-if GetDepend(['BSP_USING_LCD_OTM8009A']):
-    src += ['ports/drv_otm8009a.c']
-    
-if GetDepend(['BSP_USING_TOUCH']):
-    src += Glob('ports/touch/*.c')
-    
-if GetDepend(['BSP_USING_SDCARD']):
-    src += ['ports/drv_sdcard.c']
-
+    src += Glob('ports/fal/src/*.c')
+startup_path_prefix = SDK_LIB
 path =  [cwd]
 path += [cwd + '/CubeMX_Config/Inc']
 path += [cwd + '/ports']
-
-startup_path_prefix = SDK_LIB
+path += [cwd + '/ports/fal/inc']
 
 if rtconfig.CROSS_TOOL == 'gcc':
     src += [startup_path_prefix + '/STM32F4xx_HAL/CMSIS/Device/ST/STM32F4xx/Source/Templates/gcc/startup_stm32f469xx.s']
