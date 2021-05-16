@@ -20,8 +20,10 @@
 #include "stm32f4xx_hal.h"
 #include "w25qxx.h"
 /* defined the LED0 pin: PI8 */
-#define LED0_PIN        GET_PIN(I, 8)
-#define LED1_PIN        GET_PIN(C, 15)
+#define LED0_PIN        GET_PIN(G, 6)
+#define LED1_PIN        GET_PIN(D, 4)
+#define LED2_PIN        GET_PIN(D, 5)
+#define LED3_PIN        GET_PIN(K, 3)
 #define UBOOT_ADDRESS   (uint32_t)0x90000000
 #define KERNEL_ADDRESS  (uint32_t)0x90080000
 #define TYPE_OTA_UBOOT  0x00
@@ -51,7 +53,7 @@ static void switch_back_to_msp()
         "LDR r0, =#0x90000000 \n"
         "MSR msp, r0 \n"
         "MRS r0, control \n"
-        "BICS r0, r0, #0x4 \n"
+        "BICS r0, r0, #0x6 \n"
         "MSR control, r0 \n"
         "DSB \n"
         "ISB \n"
@@ -72,14 +74,17 @@ void jump(uint32_t addr)
     //SCB_DisableICache();
     //SCB_DisableDCache();
     SysTick->CTRL = 0;
-    switch_back_to_msp();
-    __set_MSP(*(__IO uint32_t *)addr);
+    rt_kprintf("before 1jump, %x msp %x psp %x ctl %x %x\r\n",
+    		    addr, __get_MSP(), __get_PSP(),
+    		    __get_CONTROL(), *(int *)0x90000000);
+    //switch_back_to_msp();
     JumpToApplication = (pFunction)(*(__IO uint32_t *)(addr + 4));
     SCB->VTOR = addr;
+    __set_MSP(*(__IO uint32_t *)addr);
 
-    rt_kprintf("before jump, %x msp %x psp %x ctl %x\r\n",
+    rt_kprintf("after jump, %x msp %x psp %x ctl %x %x\r\n",
     		    addr, __get_MSP(), __get_PSP(),
-    		    __get_CONTROL());
+    		    __get_CONTROL(), *(int *)0x90000000);
     JumpToApplication();
 }
 
@@ -103,14 +108,30 @@ int main(void)
     /* set LED0 pin mode to output */
     rt_pin_mode(LED0_PIN, PIN_MODE_OUTPUT);
     rt_pin_mode(LED1_PIN, PIN_MODE_OUTPUT);
+    rt_pin_mode(LED2_PIN, PIN_MODE_OUTPUT);
+    rt_pin_mode(LED3_PIN, PIN_MODE_OUTPUT);
 
     while (count++) {
         rt_pin_write(LED0_PIN, PIN_HIGH);
         rt_pin_write(LED1_PIN, PIN_LOW);
-        rt_thread_mdelay(500);
+        rt_pin_write(LED2_PIN, PIN_LOW);
+        rt_pin_write(LED3_PIN, PIN_LOW);
+        rt_thread_mdelay(300);
         rt_pin_write(LED0_PIN, PIN_LOW);
         rt_pin_write(LED1_PIN, PIN_HIGH);
-        rt_thread_mdelay(500);
+        rt_pin_write(LED2_PIN, PIN_LOW);
+        rt_pin_write(LED3_PIN, PIN_LOW);
+        rt_thread_mdelay(300);
+        rt_pin_write(LED0_PIN, PIN_LOW);
+        rt_pin_write(LED1_PIN, PIN_LOW);
+        rt_pin_write(LED2_PIN, PIN_HIGH);
+        rt_pin_write(LED3_PIN, PIN_LOW);
+        rt_thread_mdelay(300);
+        rt_pin_write(LED0_PIN, PIN_LOW);
+        rt_pin_write(LED1_PIN, PIN_LOW);
+        rt_pin_write(LED2_PIN, PIN_LOW);
+        rt_pin_write(LED3_PIN, PIN_HIGH);
+        rt_thread_mdelay(300);
     }
     return RT_EOK;
 }

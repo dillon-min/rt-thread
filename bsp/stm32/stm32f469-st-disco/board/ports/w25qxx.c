@@ -698,7 +698,7 @@ void W25Q_Memory_Mapped_Enable(void)
  
   if (HAL_QSPI_MemoryMapped(&hqspi, &s_command, &s_mem_mapped_cfg) != HAL_OK)
   {
-
+	rt_kprintf("enter qspi mem map mode failed\r\n");
   }
 }
 

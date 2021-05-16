@@ -68,8 +68,10 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-//    MX_QUADSPI_Init();
+#if 0 
+   MX_QUADSPI_Init();
 
-  //  W25QXX_ExitQPIMode();
-    //W25QXX_Reset();
+   W25QXX_ExitQPIMode();
+   W25QXX_Reset();
+#endif
 }
