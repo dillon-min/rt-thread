@@ -50,8 +50,8 @@ static void switch_back_to_msp()
 {
     __asm volatile (
         "PUSH {r0, r1, lr} \n"
-        "LDR r0, =#0x90000000 \n"
-        "MSR msp, r0 \n"
+//        "LDR r0, =#0x90000000 \n"
+//        "MSR msp, r0 \n"
         "MRS r0, control \n"
         "BICS r0, r0, #0x6 \n"
         "MSR control, r0 \n"
@@ -74,13 +74,13 @@ void jump(uint32_t addr)
     //SCB_DisableICache();
     //SCB_DisableDCache();
     SysTick->CTRL = 0;
-    rt_kprintf("before 1jump, %x msp %x psp %x ctl %x %x\r\n",
-    		    addr, __get_MSP(), __get_PSP(),
-    		    __get_CONTROL(), *(int *)0x90000000);
-    //switch_back_to_msp();
+//    rt_kprintf("before 1jump, %x msp %x psp %x ctl %x %x\r\n",
+//    		    addr, __get_MSP(), __get_PSP(),
+//    		    __get_CONTROL(), *(int *)0x90000000);
+    switch_back_to_msp();
     JumpToApplication = (pFunction)(*(__IO uint32_t *)(addr + 4));
     SCB->VTOR = addr;
-    __set_MSP(*(__IO uint32_t *)addr);
+//    __set_MSP(*(__IO uint32_t *)addr);
 
     rt_kprintf("after jump, %x msp %x psp %x ctl %x %x\r\n",
     		    addr, __get_MSP(), __get_PSP(),
