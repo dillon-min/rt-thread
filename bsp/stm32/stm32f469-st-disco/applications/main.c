@@ -63,11 +63,11 @@ static void switch_back_to_msp()
 /* jump to u-boot or other fw installed on qspi flash */
 void jump(uint32_t addr)
 {
-    W25QXX_ExitQPIMode();
+/*    W25QXX_ExitQPIMode();
     W25QXX_Reset();
     W25QXX_Init();
-    W25Q_Memory_Mapped_Enable();
-
+    W25Q_Memory_Mapped_Enable();*/
+    config_qspi_mmap();
     HAL_NVIC_DisableIRQ(USART3_IRQn);
     rt_hw_interrupt_disable();
     HAL_MPU_Disable();
@@ -106,13 +106,15 @@ int main(void)
     //switch_baud_2m();
     rt_kprintf("BOOT\r\n"); 
     /* set LED0 pin mode to output */
+#if 0
     rt_pin_mode(LED0_PIN, PIN_MODE_OUTPUT);
     rt_pin_mode(LED1_PIN, PIN_MODE_OUTPUT);
     rt_pin_mode(LED2_PIN, PIN_MODE_OUTPUT);
     rt_pin_mode(LED3_PIN, PIN_MODE_OUTPUT);
-
+#endif
     while (count++) {
-        rt_pin_write(LED0_PIN, PIN_HIGH);
+#if 0
+    	rt_pin_write(LED0_PIN, PIN_HIGH);
         rt_pin_write(LED1_PIN, PIN_LOW);
         rt_pin_write(LED2_PIN, PIN_LOW);
         rt_pin_write(LED3_PIN, PIN_LOW);
@@ -132,6 +134,9 @@ int main(void)
         rt_pin_write(LED2_PIN, PIN_LOW);
         rt_pin_write(LED3_PIN, PIN_HIGH);
         rt_thread_mdelay(300);
+#else
+        rt_thread_mdelay(300);
+#endif
     }
     return RT_EOK;
 }

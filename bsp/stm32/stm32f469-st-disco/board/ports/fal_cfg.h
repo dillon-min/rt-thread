@@ -36,7 +36,6 @@ extern struct fal_flash_dev nor_flash1;
 /* flash device table */
 #define FAL_FLASH_DEV_TABLE \
 {                           \
-        &nor_flash0,        \
         &nor_flash1,        \
 }
 
@@ -44,9 +43,9 @@ extern struct fal_flash_dev nor_flash1;
 #ifdef FAL_PART_HAS_TABLE_CFG
 #define FAL_PART_TABLE                                                                 \
 {                                                                                      \
-        {FAL_PART_MAGIC_WORD, "root",   NOR_FLASH_DEV_NAME,   0,  16*1024*1024, 0},    \
-        {FAL_PART_MAGIC_WORD, "u-boot", QSPI_FLASH_DEV_NAME,  0,  512*1024, 0},        \
-        {FAL_PART_MAGIC_WORD, "linux",  QSPI_FLASH_DEV_NAME,  512*1024,  7680*1024, 0},\
+        {FAL_PART_MAGIC_WORD, "u-boot", QSPI_FLASH_DEV_NAME,  0,  	512*1024, 	0},        \
+        {FAL_PART_MAGIC_WORD, "linux",  QSPI_FLASH_DEV_NAME,  512*1024, 6144*1024, 	0},\
+        {FAL_PART_MAGIC_WORD, "root",   QSPI_FLASH_DEV_NAME,  6144*1024,16*1024*1024, 	0},    \
 }
 #endif /* FAL_PART_HAS_TABLE_CFG */
 

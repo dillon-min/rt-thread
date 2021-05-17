@@ -5,6 +5,7 @@ cwd     = GetCurrentDir()
 CPPPATH = [cwd]
 src     = Split("""
 main.c
+f469-qspi-mmap.c
 """)
 
 group = DefineGroup('Applications', src, depend = [''], CPPPATH = CPPPATH)
