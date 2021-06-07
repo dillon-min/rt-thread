@@ -246,8 +246,8 @@ ALIGN(4)
 const static char* _ustring[] =
 {
     "Language",
-    "RT-Thread Team.",
-    "RTT Virtual Serial",
+    "Nreal",
+    "Nreal Virtual Serial",
     serno,
     "Configuration",
     "Interface",

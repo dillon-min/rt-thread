@@ -365,8 +365,8 @@ ALIGN(4)
 const static char* _ustring[] =
 {
     "Language",
-    "RT-Thread Team.",
-    "RTT HID-Device",
+    "Nreal",
+    "Nreal HID-Device",
     "32021919830108",
     "Configuration",
     "Interface",

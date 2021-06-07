@@ -22,19 +22,13 @@ static struct udcd _stm_udc;
 static struct ep_id _ep_pool[] =
 {
     {0x0,  USB_EP_ATTR_CONTROL,     USB_DIR_INOUT,  64, ID_ASSIGNED  },
-#ifdef BSP_USBD_EP_ISOC
-    {0x1,  USB_EP_ATTR_ISOC,        USB_DIR_IN,     64, ID_UNASSIGNED},
-    {0x1,  USB_EP_ATTR_ISOC,        USB_DIR_OUT,    64, ID_UNASSIGNED},
-#else
-    {0x1,  USB_EP_ATTR_BULK,        USB_DIR_IN,     64, ID_UNASSIGNED},
-    {0x1,  USB_EP_ATTR_BULK,        USB_DIR_OUT,    64, ID_UNASSIGNED},
-#endif
-    {0x2,  USB_EP_ATTR_INT,         USB_DIR_IN,     64, ID_UNASSIGNED},
-    {0x2,  USB_EP_ATTR_INT,         USB_DIR_OUT,    64, ID_UNASSIGNED},
-    {0x3,  USB_EP_ATTR_BULK,        USB_DIR_IN,     64, ID_UNASSIGNED},
-#if !defined(SOC_SERIES_STM32F1)
-    {0x3,  USB_EP_ATTR_BULK,        USB_DIR_OUT,    64, ID_UNASSIGNED},
-#endif
+    {0x4,  USB_EP_ATTR_INT,         USB_DIR_IN,     32, ID_UNASSIGNED},
+    {0x1,  USB_EP_ATTR_INT,         USB_DIR_IN,     64, ID_UNASSIGNED},
+    {0x1,  USB_EP_ATTR_INT,         USB_DIR_OUT,    64, ID_UNASSIGNED},
+    {0x2,  USB_EP_ATTR_BULK,        USB_DIR_IN,     64, ID_UNASSIGNED},
+    {0x2,  USB_EP_ATTR_BULK,        USB_DIR_OUT,    64, ID_UNASSIGNED},
+    {0x3,  USB_EP_ATTR_ISOC,        USB_DIR_IN,     192, ID_UNASSIGNED},
+    {0x3,  USB_EP_ATTR_ISOC,        USB_DIR_OUT,    192, ID_UNASSIGNED},
     {0xFF, USB_EP_ATTR_TYPE_MASK,   USB_DIR_MASK,   0,  ID_ASSIGNED  },
 };
 
@@ -214,7 +208,8 @@ static rt_err_t _init(rt_device_t device)
     HAL_PCDEx_SetTxFiFo(pcd, 0, 0x40);
     HAL_PCDEx_SetTxFiFo(pcd, 1, 0x40);
     HAL_PCDEx_SetTxFiFo(pcd, 2, 0x40);
-    HAL_PCDEx_SetTxFiFo(pcd, 3, 0x40);
+    HAL_PCDEx_SetTxFiFo(pcd, 3, 0xC0);
+    HAL_PCDEx_SetTxFiFo(pcd, 4, 0x20);
 #else
     HAL_PCDEx_PMAConfig(pcd, 0x00, PCD_SNG_BUF, 0x18);
     HAL_PCDEx_PMAConfig(pcd, 0x80, PCD_SNG_BUF, 0x58);

@@ -19,8 +19,8 @@
 #define DBG_LVL              DBG_INFO
 #include <rtdbg.h>
 
-#define AUDIO_SAMPLERATE   16000
-#define AUDIO_CHANNEL      1
+#define AUDIO_SAMPLERATE   48000
+#define AUDIO_CHANNEL      2
 #define RESOLUTION_BITS    16
 
 #define RESOLUTION_BYTE     (RESOLUTION_BITS / 8)
@@ -46,7 +46,7 @@
 #define UAC_CS_ENDPOINT             0x25
 
 #define UAC_MAX_PACKET_SIZE         64
-#define UAC_EP_MAX_PACKET_SIZE      32
+#define UAC_EP_MAX_PACKET_SIZE      192
 #define UAC_CHANNEL_NUM             AUDIO_CHANNEL
 
 struct uac_ac_descriptor
@@ -127,8 +127,8 @@ ALIGN(4)
 const static char *_ustring[] =
 {
     "Language",
-    "RT-Thread Team.",
-    "RT-Thread Audio Speaker",
+    "Nreal",
+    "Nreal Audio Speaker",
     "32021919830108",
     "Configuration",
     "Interface",
@@ -271,7 +271,7 @@ static struct uac_as_descriptor as_desc =
         USB_DYNAMIC | USB_DIR_OUT,
         USB_EP_ATTR_ISOC,
         UAC_EP_MAX_PACKET_SIZE,
-        0x01,
+        0x03,
     },
     /* AS Endpoint Descriptor */
     {

@@ -1,8 +1,25 @@
 from building import *
 
 cwd     = GetCurrentDir()
-src     = Glob('*.c')
 CPPPATH = [cwd]
+src     = Split("""
+main.c
+protocol/mem_list.c
+driver/crc.c
+driver/fal.c
+driver/fal_flash.c
+driver/fal_partition.c
+driver/fal_rtt.c
+driver/param.c
+driver/rc4.c
+driver/event.c
+driver/utils.c
+protocol/mcu.c
+protocol/mcu_cmd.c
+""")
+
+CPPPATH += [cwd + '/protocol']
+CPPPATH += [cwd + '/driver']
 
 group = DefineGroup('Applications', src, depend = [''], CPPPATH = CPPPATH)
 
