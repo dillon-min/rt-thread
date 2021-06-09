@@ -40,14 +40,14 @@ void SAIB_Init(void)
 {
     HAL_SAI_DeInit(&SAI1B_Handler);
 
-    SAI1B_Handler.Init.AudioFrequency         = SAI_AUDIO_FREQUENCY_44K;
+    SAI1B_Handler.Init.AudioFrequency         = SAI_AUDIO_FREQUENCY_48K;
     SAI1B_Handler.Instance                    = SAI1_Block_B;
     SAI1B_Handler.Init.AudioMode              = SAI_MODESLAVE_RX;
     SAI1B_Handler.Init.Synchro                = SAI_SYNCHRONOUS;
     SAI1B_Handler.Init.OutputDrive            = SAI_OUTPUTDRIVE_ENABLE;
     SAI1B_Handler.Init.NoDivider              = SAI_MASTERDIVIDER_ENABLE;
     SAI1B_Handler.Init.FIFOThreshold          = SAI_FIFOTHRESHOLD_EMPTY;
-    SAI1B_Handler.Init.MonoStereoMode         = SAI_MONOMODE;
+    SAI1B_Handler.Init.MonoStereoMode         = SAI_STEREOMODE;
     SAI1B_Handler.Init.Protocol               = SAI_FREE_PROTOCOL;
     SAI1B_Handler.Init.DataSize               = SAI_DATASIZE_16;
     SAI1B_Handler.Init.FirstBit               = SAI_FIRSTBIT_MSB;
@@ -301,14 +301,15 @@ static rt_err_t mic_init(struct rt_audio_device *audio)
         LOG_E("Find device i2c1 error");
         return -RT_ERROR;
     }
-    
+    rt_kprintf("mic init\r\n");
+#if 0
     result = wm8978_init(mic_dev->i2c_bus);
     if (result != RT_EOK)
     {
         LOG_E("initialize wm8978 failed");
         return result;
     }
-
+#endif
     SAIB_Init();
 
     /* set default params */
@@ -326,7 +327,8 @@ static rt_err_t mic_start(struct rt_audio_device *audio, int stream)
 
     if (stream == AUDIO_STREAM_RECORD)
     {
-        wm8978_record_start(mic_dev->i2c_bus);
+    	rt_kprintf("mic start\r\n");
+        //wm8978_record_start(mic_dev->i2c_bus);
         HAL_SAI_Transmit(&SAI1A_Handler, (uint8_t *)&zero_frame[0], 2, 0);
         HAL_SAI_Receive_DMA(&SAI1B_Handler, mic_dev->rx_fifo, RX_FIFO_SIZE / 2);
     }
@@ -342,9 +344,10 @@ static rt_err_t mic_stop(struct rt_audio_device *audio, int stream)
     mic_dev = (struct mic_device *)audio->parent.user_data;
     if (stream == AUDIO_STREAM_RECORD)
     {
+    	rt_kprintf("mic stop\r\n");
         HAL_SAI_DMAStop(&SAI1B_Handler);
         HAL_SAI_Abort(&SAI1A_Handler);
-        wm8978_mic_enabled(mic_dev->i2c_bus, 0);
+        //wm8978_mic_enabled(mic_dev->i2c_bus, 0);
     }
 
     return RT_EOK;
@@ -376,7 +379,7 @@ int rt_hw_mic_init(void)
 
     /* init default configuration */
     {
-        mic_dev.record_config.samplerate = 44100;
+        mic_dev.record_config.samplerate = 48000;
         mic_dev.record_config.channels   = 2;
         mic_dev.record_config.samplebits = 16;
         mic_dev.volume                   = 55;

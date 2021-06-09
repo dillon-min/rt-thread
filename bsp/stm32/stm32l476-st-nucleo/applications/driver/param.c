@@ -56,31 +56,26 @@ void param_set(uint32_t ofs, uint8_t *buf, uint32_t len)
 rt_bool_t param_init()
 {
 	int i;
-	rt_kprintf("%s %d\r\n", __func__, __LINE__);
 	local_buf = (uint8_t *)rt_malloc(DEFAULT_PARAM_LEN*sizeof(uint8_t));
 	if (local_buf == RT_NULL) {
 		rt_kprintf("Init param failed, not enough memory\r\n");
 		return RT_FALSE;
 	}
 
-	rt_kprintf("%s %d\r\n", __func__, __LINE__);
 	part_dev = fal_partition_find(DEFAULT_PARAM_BASE);
 	if (part_dev == NULL) {
 		rt_kprintf("Can't find %s zone\r\n", DEFAULT_PARAM_BASE);
 		return RT_FALSE;
 	}
-	rt_kprintf("%s %d\r\n", __func__, __LINE__);
 	
 	if (0 > fal_partition_read(part_dev, 0, local_buf, DEFAULT_PARAM_LEN)) {
 		rt_kprintf("Can't get param\r\n");
 		return RT_FALSE;
 	}
-	rt_kprintf("%s %d\r\n", __func__, __LINE__);
 	for (i=0; i<512; i++) {
 		if (i!= 0 && i%16 == 0)
 			rt_kprintf("\r\n");
 		rt_kprintf("%02x ", local_buf[i]);
 	}
-	rt_kprintf("%s %d\r\n", __func__, __LINE__);
 	return RT_TRUE;
 }

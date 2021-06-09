@@ -152,7 +152,6 @@ int main(void)
 {
     /* set LED0 pin mode to output */
     rt_pin_mode(LED0_PIN, PIN_MODE_OUTPUT);
-    rt_kprintf("scl %d, sda %d\r\n", SCL_PIN, SDA_PIN);
     if (!param_init())
         LOG_D("can't startup system\r\n");
     //rt_memlist_init();

@@ -20,8 +20,8 @@
  * PE4				 LRCK
  * PE5				 SCLK
  * PE6				 SDIN
- * PF7				 SCL
- * PF8				 SDA
+ * PE0				 SCL
+ * PE1				 SDA
 */
 
 /* Register Definitions */
@@ -686,7 +686,7 @@ static rt_uint16_t wm8978_read_reg(struct rt_i2c_bus_device *dev, rt_uint16_t re
   */
 void wm8978_player_start(struct rt_i2c_bus_device *dev)
 {
-    rt_base_t level = rt_hw_interrupt_disable();
+    //rt_base_t level = rt_hw_interrupt_disable();
     wm8978_reset(dev);
 #if 0
     /* 1.5x boost power up sequence,Mute all outputs. */
@@ -744,13 +744,13 @@ void wm8978_player_start(struct rt_i2c_bus_device *dev)
     wm8978_output_set(dev, 1, 0);
     wm8978_set_volume(dev, 80);
 #endif
-    rt_hw_interrupt_enable(level);
+    //rt_hw_interrupt_enable(level);
 }
 
 void wm8978_record_start(struct rt_i2c_bus_device *dev)
 {
     rt_uint16_t val = 0;
-    rt_base_t level = rt_hw_interrupt_disable();
+    //rt_base_t level = rt_hw_interrupt_disable();
     wm8978_write_reg(dev, REG_POWER_MANAGEMENT1 | MICBEN | BIASEN | VMIDSEL_5K);
     wm8978_write_reg(dev, REG_POWER_MANAGEMENT2 | ROUT1EN | LOUT1EN | BOOSTENR | BOOSTENL);
     val = wm8978_read_reg(dev, REG_POWER_MANAGEMENT3);
@@ -772,12 +772,12 @@ void wm8978_record_start(struct rt_i2c_bus_device *dev)
     //wm8978_output_set(dev, 0, 0);
     wm8978_aux_gain(dev, 5);
     wm8978_mic_gain(dev, 50);
-    rt_hw_interrupt_enable(level);
+    //rt_hw_interrupt_enable(level);
 }
 
 rt_err_t wm8978_init(struct rt_i2c_bus_device *dev)
 {
-    rt_base_t level = rt_hw_interrupt_disable();
+    //rt_base_t level = rt_hw_interrupt_disable();
     wm8978_reset(dev);
     wm8978_write_reg(dev, REG_POWER_MANAGEMENT1 | MICBEN | BIASEN | VMIDSEL_5K);
     wm8978_write_reg(dev, REG_POWER_MANAGEMENT2 | ROUT1EN | LOUT1EN | BOOSTENR | BOOSTENL);
@@ -794,7 +794,7 @@ rt_err_t wm8978_init(struct rt_i2c_bus_device *dev)
 
     wm8978_interface_cfg(dev, I2S_FOMAT_SELECT, 16);
     wm8978_mic_enabled(dev, 0);
-    rt_hw_interrupt_enable(level);
+    //rt_hw_interrupt_enable(level);
 	
   	return RT_EOK;
 }

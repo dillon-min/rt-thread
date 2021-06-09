@@ -13,7 +13,7 @@
 #include "drv_wm8978.h"
 
 #define DBG_TAG              "drv.sound"
-#define DBG_LVL              DBG_INFO
+#define DBG_LVL              DBG_LOG
 #include <rtdbg.h>
 
 #define TX_FIFO_SIZE         (2048)
@@ -40,14 +40,14 @@ static void SAIA_Init(void)
     PeriphClkInit.Sai1ClockSelection          = RCC_SAI1CLKSOURCE_PLLSAI2;
     PeriphClkInit.PLLSAI2.PLLSAI2Source       = RCC_PLLSOURCE_HSE;
     PeriphClkInit.PLLSAI2.PLLSAI2M            = 1;
-    PeriphClkInit.PLLSAI2.PLLSAI2N            = 40;
+    PeriphClkInit.PLLSAI2.PLLSAI2N            = 43;
     PeriphClkInit.PLLSAI2.PLLSAI2P            = RCC_PLLP_DIV7;
     PeriphClkInit.PLLSAI2.PLLSAI2R            = RCC_PLLR_DIV2;
     PeriphClkInit.PLLSAI2.PLLSAI2ClockOut     = RCC_PLLSAI2_SAI2CLK;
     HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
 
     HAL_SAI_DeInit(&SAI1A_Handler);
-    SAI1A_Handler.Init.AudioFrequency         = SAI_AUDIO_FREQUENCY_44K;
+    SAI1A_Handler.Init.AudioFrequency         = SAI_AUDIO_FREQUENCY_48K;
     SAI1A_Handler.Instance                    = SAI1_Block_A;
     SAI1A_Handler.Init.AudioMode              = SAI_MODEMASTER_TX;
     SAI1A_Handler.Init.Synchro                = SAI_ASYNCHRONOUS;
@@ -240,7 +240,7 @@ static rt_err_t sound_getcaps(struct rt_audio_device *audio, struct rt_audio_cap
             break;
 
         case AUDIO_MIXER_VOLUME:
-            caps->udata.value =  0;//wm8978_volume_get();
+            caps->udata.value =  snd_dev->volume;//wm8978_volume_get();
             break;
 
         default:
@@ -357,13 +357,14 @@ static rt_err_t sound_init(struct rt_audio_device *audio)
     RT_ASSERT(audio != RT_NULL);
     snd_dev = (struct sound_device *)audio->parent.user_data;
     snd_dev->i2c_bus = (struct rt_i2c_bus_device *)rt_device_find(CODEC_I2C_NAME);
-    wm8978_init(snd_dev->i2c_bus);
     //wm8978_init("i2c3", GET_PIN(A, 5));
+    rt_kprintf("sound init \r\n");
     SAIA_Init();
 
     /* set default params */
     SAIA_Frequency_Set(snd_dev->replay_config.samplerate);
     SAIA_Channels_Set(snd_dev->replay_config.channels);
+    wm8978_init(snd_dev->i2c_bus);
 
     return result;
 }
@@ -378,7 +379,6 @@ static rt_err_t sound_start(struct rt_audio_device *audio, int stream)
     if (stream == AUDIO_STREAM_REPLAY)
     {
         LOG_D("open sound device");
-        //wm8978_start(ES_MODE_DAC);
         wm8978_player_start(snd_dev->i2c_bus);
         HAL_SAI_Transmit_DMA(&SAI1A_Handler, snd_dev->tx_fifo, TX_FIFO_SIZE / 2);
     }
@@ -393,7 +393,6 @@ static rt_err_t sound_stop(struct rt_audio_device *audio, int stream)
     if (stream == AUDIO_STREAM_REPLAY)
     {
         HAL_SAI_DMAStop(&SAI1A_Handler);
-        //wm8978_stop(ES_MODE_DAC);
         LOG_D("close sound device");
     }
 
@@ -446,7 +445,7 @@ int rt_hw_sound_init(void)
 
     /* init default configuration */
     {
-        snd_dev.replay_config.samplerate = 44100;
+        snd_dev.replay_config.samplerate = 48000;
         snd_dev.replay_config.channels   = 2;
         snd_dev.replay_config.samplebits = 16;
         snd_dev.volume                   = 55;
