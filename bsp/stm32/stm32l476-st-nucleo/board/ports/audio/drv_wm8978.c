@@ -799,6 +799,33 @@ rt_err_t wm8978_init(struct rt_i2c_bus_device *dev)
   	return RT_EOK;
 }
 
+rt_err_t wm8978_start(struct rt_i2c_bus_device *dev)
+{
+	wm8978_reset(dev);
+	wm8978_write_reg(dev, REG_POWER_MANAGEMENT1 | MICBEN | BIASEN | VMIDSEL_5K);
+	wm8978_write_reg(dev, REG_POWER_MANAGEMENT2 | ROUT1EN | LOUT1EN | BOOSTENR | BOOSTENL);
+	wm8978_write_reg(dev, REG_POWER_MANAGEMENT3 | LOUT2EN | ROUT2EN | RMIXEN | LMIXEN
+			| DACENL | DACENR);
+	wm8978_write_reg(dev, REG_CLOCK_GEN | CLKSEL_MCLK | MCLK_DIV1);
+	wm8978_write_reg(dev, (REG_BEEP | BEEPVOL_N3DB | INVROUT2));
+	wm8978_write_reg(dev, (REG_LEFT_ADC_BOOST | PGABOOSTL));
+	wm8978_write_reg(dev, REG_RIGHT_ADC_BOOST | PGABOOSTR);
+	wm8978_write_reg(dev, (REG_OUTPUT | TSDEN | SPKBOOST));
+	wm8978_write_reg(dev, REG_DAC | DACOSR128 | RMIXEN);
+	wm8978_write_reg(dev, (REG_ADC | ADCOSR128));
+	wm8978_write_reg(dev, REG_AUDIO_INTERFACE | WL_16BITS | FMT_I2S);
+	wm8978_ADC_enabled(dev, 1);
+	wm8978_output_set(dev, 1, 0);
+	wm8978_linein_enabled(dev, 1);
+	wm8978_aux_enabled(dev, 0);
+	wm8978_aux_gain(dev, 5);
+	wm8978_mic_gain(dev, 50);
+	wm8978_set_volume(dev, 80);
+	wm8978_interface_cfg(dev, I2S_FOMAT_SELECT, 16);
+
+	wm8978_mic_enabled(dev, 0);
+}
+
 void wm8978_DAC_enabled(struct rt_i2c_bus_device *dev, rt_bool_t bool)
 {
     rt_uint16_t value;
@@ -815,6 +842,15 @@ void wm8978_ADC_enabled(struct rt_i2c_bus_device *dev, rt_bool_t bool)
     value = wm8978_read_reg(dev, REG_POWER_MANAGEMENT2);
     bool ? (value |= 3) : (value &= ~3);
     wm8978_write_reg(dev, REG_POWER_MANAGEMENT2 | value);
+}
+
+void wm8978_spk_enabled(struct rt_i2c_bus_device *dev, rt_bool_t bool)
+{
+    rt_uint16_t value;
+
+    value = wm8978_read_reg(dev, REG_POWER_MANAGEMENT3);
+    bool ? (value |= 3 << 5) : (value &= ~(3 << 5));
+    wm8978_write_reg(dev, REG_POWER_MANAGEMENT3 | value);
 }
 
 void wm8978_mic_enabled(struct rt_i2c_bus_device *dev, rt_bool_t bool)

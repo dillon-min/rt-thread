@@ -364,7 +364,7 @@ static rt_err_t sound_init(struct rt_audio_device *audio)
     /* set default params */
     SAIA_Frequency_Set(snd_dev->replay_config.samplerate);
     SAIA_Channels_Set(snd_dev->replay_config.channels);
-    wm8978_init(snd_dev->i2c_bus);
+    wm8978_start(snd_dev->i2c_bus);
 
     return result;
 }
@@ -379,7 +379,7 @@ static rt_err_t sound_start(struct rt_audio_device *audio, int stream)
     if (stream == AUDIO_STREAM_REPLAY)
     {
         LOG_D("open sound device");
-        wm8978_player_start(snd_dev->i2c_bus);
+        wm8978_spk_enabled(snd_dev->i2c_bus, 1);
         HAL_SAI_Transmit_DMA(&SAI1A_Handler, snd_dev->tx_fifo, TX_FIFO_SIZE / 2);
     }
 
@@ -388,10 +388,14 @@ static rt_err_t sound_start(struct rt_audio_device *audio, int stream)
 
 static rt_err_t sound_stop(struct rt_audio_device *audio, int stream)
 {
+    struct sound_device *snd_dev;
+
     RT_ASSERT(audio != RT_NULL);
+    snd_dev = (struct sound_device *)audio->parent.user_data;
 
     if (stream == AUDIO_STREAM_REPLAY)
     {
+        wm8978_spk_enabled(snd_dev->i2c_bus, 0);
         HAL_SAI_DMAStop(&SAI1A_Handler);
         LOG_D("close sound device");
     }

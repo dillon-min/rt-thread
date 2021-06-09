@@ -23,7 +23,7 @@ enum data_fomat_select
     PCM_FOMAT_SELECT,
 };
 
-rt_err_t wm8978_init(struct rt_i2c_bus_device *dev);
+rt_err_t wm8978_start(struct rt_i2c_bus_device *dev);
 void wm8978_player_start(struct rt_i2c_bus_device *dev);
 void wm8978_record_start(struct rt_i2c_bus_device *dev);
 
@@ -35,6 +35,7 @@ void wm8978_ADC_enabled(struct rt_i2c_bus_device *dev, rt_bool_t bool);
 void wm8978_DAC_enabled(struct rt_i2c_bus_device *dev, rt_bool_t bool);
 
 void wm8978_mic_enabled(struct rt_i2c_bus_device *dev, rt_bool_t bool);
+void wm8978_spk_enabled(struct rt_i2c_bus_device *dev, rt_bool_t bool);
 void wm8978_linein_enabled(struct rt_i2c_bus_device *dev, rt_bool_t bool);
 void wm8978_aux_enabled(struct rt_i2c_bus_device *dev, rt_bool_t bool);
 void wm8978_linein_gain(struct rt_i2c_bus_device *dev, rt_uint8_t value);
