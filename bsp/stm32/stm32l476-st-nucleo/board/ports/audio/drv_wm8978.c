@@ -732,7 +732,7 @@ void wm8978_player_start(struct rt_i2c_bus_device *dev)
 #else
     wm8978_write_reg(dev, REG_POWER_MANAGEMENT1 | BIASEN | VMIDSEL_5K);
     wm8978_write_reg(dev, REG_POWER_MANAGEMENT2 | LOUT1EN | ROUT1EN | BOOSTENL | BOOSTENR);
-    wm8978_write_reg(dev, REG_POWER_MANAGEMENT3 | LMIXEN | RMIXEN | DACENL | DACENR);
+    wm8978_write_reg(dev, REG_POWER_MANAGEMENT3 | LOUT2EN | ROUT2EN | LMIXEN | RMIXEN | DACENL | DACENR);
     wm8978_write_reg(dev, REG_CLOCK_GEN | CLKSEL_MCLK | MCLK_DIV1);
     wm8978_write_reg(dev, REG_BEEP | INVROUT2);
     wm8978_write_reg(dev, REG_LEFT_ADC_BOOST | PGABOOSTL);
