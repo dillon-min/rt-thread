@@ -329,7 +329,7 @@ static rt_err_t mic_start(struct rt_audio_device *audio, int stream)
 
     if (stream == AUDIO_STREAM_RECORD)
     {
-    	rt_kprintf("mic start\r\n");
+    	//rt_kprintf("mic start\r\n");
         wm8978_mic_enabled(mic_dev->i2c_bus, 1);
         HAL_SAI_Transmit(&SAI1A_Handler, (uint8_t *)&zero_frame[0], 2, 0);
         HAL_SAI_Receive_DMA(&SAI1B_Handler, mic_dev->rx_fifo, RX_FIFO_SIZE / 2);

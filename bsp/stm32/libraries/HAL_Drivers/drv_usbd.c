@@ -22,13 +22,15 @@ static struct udcd _stm_udc;
 static struct ep_id _ep_pool[] =
 {
     {0x0,  USB_EP_ATTR_CONTROL,     USB_DIR_INOUT,  64, ID_ASSIGNED  },
-    {0x1,  USB_EP_ATTR_INT,         USB_DIR_IN,     64, ID_UNASSIGNED},
-    {0x1,  USB_EP_ATTR_INT,         USB_DIR_OUT,    64, ID_UNASSIGNED},
-    {0x2,  USB_EP_ATTR_BULK,        USB_DIR_IN,     64, ID_UNASSIGNED},
-    {0x2,  USB_EP_ATTR_BULK,        USB_DIR_OUT,    64, ID_UNASSIGNED},
-    {0x3,  USB_EP_ATTR_ISOC,        USB_DIR_IN,     192, ID_UNASSIGNED},
-    {0x3,  USB_EP_ATTR_ISOC,        USB_DIR_OUT,    192, ID_UNASSIGNED},
-    {0x4,  USB_EP_ATTR_INT,         USB_DIR_IN,     32, ID_UNASSIGNED},
+    {0x1,  USB_EP_ATTR_ISOC,        USB_DIR_IN,     196, ID_UNASSIGNED},
+    {0x1,  USB_EP_ATTR_ISOC,        USB_DIR_OUT,    196, ID_UNASSIGNED},
+    {0x5,  USB_EP_ATTR_INT,         USB_DIR_IN,    64, ID_UNASSIGNED},
+    {0x2,  USB_EP_ATTR_INT,         USB_DIR_IN,     64, ID_UNASSIGNED},
+    {0x2,  USB_EP_ATTR_INT,         USB_DIR_OUT,     64, ID_UNASSIGNED},
+    {0x3,  USB_EP_ATTR_INT,         USB_DIR_IN,    64, ID_UNASSIGNED},
+    {0x3,  USB_EP_ATTR_INT,         USB_DIR_OUT,     64, ID_UNASSIGNED},
+    {0x4,  USB_EP_ATTR_BULK,        USB_DIR_IN,    64, ID_UNASSIGNED},
+    {0x4,  USB_EP_ATTR_BULK,        USB_DIR_OUT,     64, ID_UNASSIGNED},
     {0xFF, USB_EP_ATTR_TYPE_MASK,   USB_DIR_MASK,   0,  ID_ASSIGNED  },
 };
 
@@ -61,6 +63,7 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
     }
     else
     {
+    	  //  rt_kprintf("host get data 0x%x, %d\r\n", epnum, hpcd->IN_ep[epnum].xfer_count);
         rt_usbd_ep_in_handler(&_stm_udc, 0x80 | epnum, hpcd->IN_ep[epnum].xfer_count);
     }
 }
@@ -80,11 +83,22 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd)
     rt_usbd_disconnect_handler(&_stm_udc);
 }
 
+void HAL_PCD_ISOOUTIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
+{
+	//rt_kprintf("got 0x%x iso out incomplete call back\r\n", epnum);
+}
+
+void HAL_PCD_ISOINIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
+{
+	rt_kprintf("got 0x%x iso in incomplete call back\r\n", epnum);
+}
+
 void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
     if (epnum != 0)
     {
-        rt_usbd_ep_out_handler(&_stm_udc, epnum, hpcd->OUT_ep[epnum].xfer_count);
+//    	rt_kprintf("get host data 0x%x %d\r\n", epnum, hpcd->OUT_ep[epnum].xfer_count);
+    	    rt_usbd_ep_out_handler(&_stm_udc, epnum, hpcd->OUT_ep[epnum].xfer_count);
     }
     else
     {
@@ -165,7 +179,8 @@ static rt_size_t _ep_read_prepare(rt_uint8_t address, void *buffer, rt_size_t si
 
 static rt_size_t _ep_write(rt_uint8_t address, void *buffer, rt_size_t size)
 {
-    HAL_PCD_EP_Transmit(&_stm_pcd, address, buffer, size);
+    //rt_kprintf("send 0x%x usb %d data\r\n", address, size);
+    	HAL_PCD_EP_Transmit(&_stm_pcd, address, buffer, size);
     return size;
 }
 
@@ -206,10 +221,11 @@ static rt_err_t _init(rt_device_t device)
 #if !defined(SOC_SERIES_STM32F1)
     HAL_PCDEx_SetRxFiFo(pcd, 0x80);
     HAL_PCDEx_SetTxFiFo(pcd, 0, 0x40);
-    HAL_PCDEx_SetTxFiFo(pcd, 1, 0x40);
+    HAL_PCDEx_SetTxFiFo(pcd, 1, 0xC0);
     HAL_PCDEx_SetTxFiFo(pcd, 2, 0x40);
-    HAL_PCDEx_SetTxFiFo(pcd, 3, 0xC0);
-    HAL_PCDEx_SetTxFiFo(pcd, 4, 0x20);
+    HAL_PCDEx_SetTxFiFo(pcd, 3, 0x40);
+    HAL_PCDEx_SetTxFiFo(pcd, 4, 0x40);
+    HAL_PCDEx_SetTxFiFo(pcd, 5, 0x40);
 #else
     HAL_PCDEx_PMAConfig(pcd, 0x00, PCD_SNG_BUF, 0x18);
     HAL_PCDEx_PMAConfig(pcd, 0x80, PCD_SNG_BUF, 0x58);

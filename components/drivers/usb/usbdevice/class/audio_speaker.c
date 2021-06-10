@@ -129,7 +129,7 @@ const static char *_ustring[] =
     "Language",
     "Nreal",
     "Nreal Audio Speaker",
-    "32021919830108",
+    "32021919830107",
     "Configuration",
     "Interface",
 };
@@ -195,7 +195,7 @@ static struct uac_ac_descriptor ac_desc =
         UAC_CS_INTERFACE,
         UDESCSUB_AC_OUTPUT,
         0x02,      /* Terminal ID: 2 */
-        0x0302,    /* Terminal Type: Headphones (0x0302) */
+        0x0301,    /* Terminal Type: Headphones (0x0302) */
         0x00,      /* Assoc Terminal: 0 */
         0x01,      /* Source ID: 1 */
         0x00,      /* Terminal: 0 */

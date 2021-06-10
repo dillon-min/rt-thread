@@ -334,10 +334,13 @@ void mic_entry(void *parameter)
                 else
                     break;
             }
+   //             rt_kprintf("%s %d %d\r\n", __func__, __LINE__, e);
             if (e & EVENT_RECORD_DATA)
             {
                 index = (mic.buffer_index >= RECORD_BUFFER_SZ / 2) ? 0 : (RECORD_BUFFER_SZ / 2);
+     //           rt_kprintf("%s %d\r\n", __func__, __LINE__);
                 rt_device_read(mic.dev, 0, mic.buffer + index, RECORD_BUFFER_SZ / 2);
+       //         rt_kprintf("%s %d\r\n", __func__, __LINE__);
             }
             else if (e & EVENT_RECORD_STOP)
             {
@@ -355,6 +358,7 @@ __exit:
 
 static rt_err_t _record_start(ufunction_t func)
 {
+    LOG_D("_record_start");
     mic.ep->request.buffer = RT_NULL;
     mic.ep->request.size = UAC_EP_MAX_PACKET_SIZE;
     mic.ep->request.req_type = UIO_REQUEST_WRITE;
@@ -367,6 +371,7 @@ static rt_err_t _record_start(ufunction_t func)
 
 static rt_err_t _record_stop(ufunction_t func)
 {
+    LOG_D("_record_stop");
     mic.open_count --;
     rt_event_send(mic.event, EVENT_RECORD_STOP);
     return 0;

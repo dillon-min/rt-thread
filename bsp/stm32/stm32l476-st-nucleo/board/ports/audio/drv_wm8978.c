@@ -814,6 +814,7 @@ rt_err_t wm8978_start(struct rt_i2c_bus_device *dev)
 	wm8978_write_reg(dev, REG_DAC | DACOSR128 | RMIXEN);
 	wm8978_write_reg(dev, (REG_ADC | ADCOSR128));
 	wm8978_write_reg(dev, REG_AUDIO_INTERFACE | WL_16BITS | FMT_I2S);
+    	//wm8978_write_reg(dev, REG_ADDITIONAL | WM_SR_16KHZ);
 	wm8978_ADC_enabled(dev, 1);
 	wm8978_output_set(dev, 1, 0);
 	wm8978_linein_enabled(dev, 1);
