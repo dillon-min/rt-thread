@@ -27,9 +27,16 @@ if GetDepend(['BSP_USING_TOUCH']):
 if GetDepend(['BSP_USING_SDCARD']):
     src += ['ports/drv_sdcard.c']
 
+if GetDepend(['BSP_USING_AUDIO']):
+    src += Glob('ports/audio/drv_cs43l22.c')
+    src += Glob('ports/audio/drv_sound.c')
+
 path =  [cwd]
 path += [cwd + '/CubeMX_Config/Inc']
 path += [cwd + '/ports']
+    
+if GetDepend(['BSP_USING_AUDIO']):
+    path += [cwd + '/ports/audio']
 
 startup_path_prefix = SDK_LIB
 

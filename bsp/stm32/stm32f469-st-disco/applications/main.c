@@ -15,12 +15,14 @@
 
 /* defined the LED1 pin: PG6 */
 #define LED1_PIN    GET_PIN(G, 6)
+#define SCL_PIN    GET_PIN(H, 4)
+#define SDA_PIN    GET_PIN(H, 5)
 
 int main(void)
 {
     /* set LED1 pin mode to output */
     rt_pin_mode(LED1_PIN, PIN_MODE_OUTPUT);
-
+    rt_kprintf("scl %d, sda %d\r\n", SCL_PIN, SDA_PIN);
     while (1)
     {
         rt_pin_write(LED1_PIN, PIN_HIGH);

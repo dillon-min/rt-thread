@@ -1004,6 +1004,70 @@ void HAL_SDRAM_MspDeInit(SDRAM_HandleTypeDef* hsdram){
   /* USER CODE END SDRAM_MspDeInit 1 */
 }
 
+static uint32_t SAI1_client =0;
+
+void HAL_SAI_MspInit(SAI_HandleTypeDef* hsai)
+{
+
+  GPIO_InitTypeDef GPIO_InitStruct;
+    __HAL_RCC_GPIOE_CLK_ENABLE();
+    __HAL_RCC_GPIOG_CLK_ENABLE();
+/* SAI1 */
+    if(hsai->Instance==SAI1_Block_A)
+    {
+    /* Peripheral clock enable */
+    if (SAI1_client == 0)
+    {
+       __HAL_RCC_SAI1_CLK_ENABLE();
+    }
+    SAI1_client ++;
+    
+    /**SAI1_A_Block_A GPIO Configuration    
+    PG7     ------> SAI1_MCLK_A
+    PE4     ------> SAI1_FS_A
+    PE5     ------> SAI1_SCK_A
+    PE6     ------> SAI1_SD_A 
+    PE2     ------> AUDIO_RST
+    PE3     ------> SPKR/HP
+    */
+    GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF6_SAI1;
+    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+    GPIO_InitStruct.Pin = GPIO_PIN_7;
+    HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+    }
+}
+
+void HAL_SAI_MspDeInit(SAI_HandleTypeDef* hsai)
+{
+
+/* SAI1 */
+    if(hsai->Instance==SAI1_Block_A)
+    {
+    SAI1_client --;
+    if (SAI1_client == 0)
+      {
+      /* Peripheral clock disable */ 
+       __HAL_RCC_SAI1_CLK_DISABLE();
+      }
+    
+    /**SAI1_A_Block_A GPIO Configuration    
+    PG7     ------> SAI1_MCLK_A
+    PE4     ------> SAI1_FS_A
+    PE5     ------> SAI1_SCK_A
+    PE6     ------> SAI1_SD_A 
+    PE2     ------> AUDIO_RST
+    PE3     ------> SPKR/HP
+    */
+    HAL_GPIO_DeInit(GPIOE, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6);
+    HAL_GPIO_DeInit(GPIOG, GPIO_PIN_7);
+
+    }
+}
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
