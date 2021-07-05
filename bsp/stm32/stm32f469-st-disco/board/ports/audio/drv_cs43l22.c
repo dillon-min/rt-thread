@@ -61,7 +61,7 @@ uint32_t cs43l22_Init(struct rt_i2c_bus_device *dev, uint16_t DeviceAddr,
   uint32_t counter = 0;
  
   cs43l22_ReadID(dev, DeviceAddr);
-	LOG_D("%s %d", __func__, __LINE__);
+  LOG_D("%s %d", __func__, __LINE__);
   /* Keep Codec powered OFF */
   counter += CODEC_IO_Write(dev, DeviceAddr, CS43L22_REG_POWER_CTL1, 0x01);  
   

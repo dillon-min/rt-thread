@@ -22,8 +22,8 @@ static struct udcd _stm_udc;
 static struct ep_id _ep_pool[] =
 {
     {0x0,  USB_EP_ATTR_CONTROL,     USB_DIR_INOUT,  64, ID_ASSIGNED  },
-    {0x1,  USB_EP_ATTR_ISOC,        USB_DIR_IN,     196, ID_UNASSIGNED},
-    {0x1,  USB_EP_ATTR_ISOC,        USB_DIR_OUT,    196, ID_UNASSIGNED},
+    {0x1,  USB_EP_ATTR_ISOC,        USB_DIR_IN,     64, ID_UNASSIGNED},
+    {0x1,  USB_EP_ATTR_ISOC,        USB_DIR_OUT,    64, ID_UNASSIGNED},
     {0x5,  USB_EP_ATTR_INT,         USB_DIR_IN,    64, ID_UNASSIGNED},
     {0x2,  USB_EP_ATTR_INT,         USB_DIR_IN,     64, ID_UNASSIGNED},
     {0x2,  USB_EP_ATTR_INT,         USB_DIR_OUT,     64, ID_UNASSIGNED},
@@ -221,7 +221,7 @@ static rt_err_t _init(rt_device_t device)
 #if !defined(SOC_SERIES_STM32F1)
     HAL_PCDEx_SetRxFiFo(pcd, 0x80);
     HAL_PCDEx_SetTxFiFo(pcd, 0, 0x40);
-    HAL_PCDEx_SetTxFiFo(pcd, 1, 0xC0);
+    HAL_PCDEx_SetTxFiFo(pcd, 1, 0x40);
     HAL_PCDEx_SetTxFiFo(pcd, 2, 0x40);
     HAL_PCDEx_SetTxFiFo(pcd, 3, 0x40);
     HAL_PCDEx_SetTxFiFo(pcd, 4, 0x40);

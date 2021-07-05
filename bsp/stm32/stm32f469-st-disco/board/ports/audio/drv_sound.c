@@ -17,7 +17,7 @@
 #include <rtdbg.h>
 
 #define CODEC_I2C_NAME  ("i2c1")
-#define AUDIO_I2C_ADDRESS                ((uint16_t) 0x4a)
+#define AUDIO_I2C_ADDRESS                ((uint16_t) 0x4a) //ori 0x94
 #define TX_DMA_FIFO_SIZE (2048)
 
 struct drv_sai _sai_a = {0};
@@ -47,9 +47,9 @@ const rt_uint32_t SAI_PSC_TBL[][5] =
 
 void SAIA_samplerate_set(rt_uint32_t freq)
 {
-    RCC_PeriphCLKInitTypeDef /*PeriphClkInitStruct*/rcc_ex_clk_init_struct;
     int i;
 #if 0
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
     /* check frequence */
     for (i = 0; i < (sizeof(SAI_PSC_TBL) / sizeof(SAI_PSC_TBL[0])); i++)
     {
@@ -65,7 +65,9 @@ void SAIA_samplerate_set(rt_uint32_t freq)
     PeriphClkInitStruct.PLLI2S.PLLI2SN = SAI_PSC_TBL[i][1];
     PeriphClkInitStruct.PLLI2S.PLLI2SQ = SAI_PSC_TBL[i][2];
     PeriphClkInitStruct.PLLI2SDivQ = SAI_PSC_TBL[i][3] + 1;
+    HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
 #else
+    RCC_PeriphCLKInitTypeDef rcc_ex_clk_init_struct;
     if((freq == AUDIO_FREQUENCY_11K) || (freq == AUDIO_FREQUENCY_22K)
     		    || (freq == AUDIO_FREQUENCY_44K)) {
     	    rcc_ex_clk_init_struct.PeriphClockSelection = RCC_PERIPHCLK_SAI_PLLI2S;
@@ -78,8 +80,8 @@ void SAIA_samplerate_set(rt_uint32_t freq)
     	    rcc_ex_clk_init_struct.PLLI2S.PLLI2SQ = 7;
     	    rcc_ex_clk_init_struct.PLLI2SDivQ = 1;
     }
-#endif
     HAL_RCCEx_PeriphCLKConfig(&rcc_ex_clk_init_struct);
+#endif
 
     __HAL_RCC_SAI_BLOCKACLKSOURCE_CONFIG(RCC_SAIACLKSOURCE_PLLI2S);
 
@@ -136,6 +138,7 @@ void SAIA_config_set(struct rt_audio_configure config)
 /* initial sai A */
 rt_err_t SAIA_config_init(void)
 {
+    __HAL_SAI_DISABLE(&_sai_a.hsai);
     _sai_a.hsai.Instance = SAI1_Block_A;
     _sai_a.hsai.Init.AudioMode = SAI_MODEMASTER_TX;
     _sai_a.hsai.Init.Synchro = SAI_ASYNCHRONOUS;
@@ -184,7 +187,7 @@ rt_err_t SAIA_tx_dma(void)
 
     _sai_a.hdma.Init.Mode                = DMA_CIRCULAR;
     _sai_a.hdma.Init.Priority            = DMA_PRIORITY_HIGH;
-    _sai_a.hdma.Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
+    _sai_a.hdma.Init.FIFOMode            = DMA_FIFOMODE_ENABLE;
     _sai_a.hdma.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
     _sai_a.hdma.Init.MemBurst            = DMA_MBURST_SINGLE;
     _sai_a.hdma.Init.PeriphBurst         = DMA_PBURST_SINGLE;
@@ -417,13 +420,9 @@ static rt_err_t stm32_player_init(struct rt_audio_device *audio)
     sai_a_init();
     rt_pin_mode(GET_PIN(E, 2), PIN_MODE_OUTPUT);
     rt_pin_write(GET_PIN(E, 2), PIN_HIGH);
-    //rt_pin_mode(GET_PIN(E, 3), PIN_MODE_OUTPUT);
-    //rt_pin_write(GET_PIN(E, 3), PIN_HIGH);
-    //rt_thread_mdelay(10);
-    //rt_pin_write(GET_PIN(E, 2), PIN_LOW);
-	LOG_D("%s %d", __func__, __LINE__);
+    LOG_D("%s %d", __func__, __LINE__);
     cs43l22_Init(_stm32_audio_play.i2c_bus, AUDIO_I2C_ADDRESS,
-		OUTPUT_DEVICE_HEADPHONE, 0xFE, I2S_AUDIOFREQ_48K);
+		OUTPUT_DEVICE_HEADPHONE, 0xfe, I2S_AUDIOFREQ_48K);
     return RT_EOK;
 }
 
