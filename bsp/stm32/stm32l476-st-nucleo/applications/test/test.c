@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdio.h>
 #include "lusb0_usb.h"
 #include "usb.h"
 
@@ -14,6 +15,12 @@ void convert2float(int16_t acc[], int16_t gyro[], float accf[], float gyrof[]) {
 		gyrof[i] = gyro[i] * PI / 180.0 * 4000.0 / 65536.0;
 	}
 }
+typedef struct _int16_val {
+	union {
+		int16_t int_val;
+		uint8_t bytes[4];
+	};
+} int16_val;
 int main(int argc, void* argv[])
 {
 	void *handle;
@@ -29,7 +36,7 @@ int main(int argc, void* argv[])
 	if (argc >= 2)
 		send = 1;
 
-	handle = open_usb(0);
+	handle = open_usb(atoi(argv[1]));
 
 	if (handle == NULL) {
 		printf("open usb failed\r\n");
@@ -39,10 +46,10 @@ int main(int argc, void* argv[])
 	memset(cmd, 0x33, 64);
 	cmd[62] = '\r';
 	cmd[63] = '\n';
-	rcv_len = hid_xfer(handle, 0x02, cmd, 64, 1000);
+	rcv_len = hid_xfer(handle, 0x01, cmd, 64, 1000);
 	
 	while(1) {
-		len = hid_xfer(handle, 0x82, rsp, 64, 1000);
+		len = hid_xfer(handle, 0x84, rsp, 64, 1000);
 		if (len > 0) {
 #if 0
 			acc[0] = (int16_t)((rsp[1] << 24) | (rsp[2] << 16) | (rsp[3] << 8) | (rsp[4] << 0));
@@ -67,6 +74,17 @@ int main(int argc, void* argv[])
 					gyrof[0], gyrof[1], gyrof[2],
 					accf[3], accf[4], accf[5],
 					gyrof[3], gyrof[4], gyrof[5]);
+#else
+			int16_val ax, ay, az, gx, gy, gz;
+			memcpy(ax.bytes, rsp+1, 4);
+			memcpy(ay.bytes, rsp+5, 4);
+			memcpy(az.bytes, rsp+9, 4);
+			memcpy(gx.bytes, rsp+13, 4);
+			memcpy(gy.bytes, rsp+17, 4);
+			memcpy(gz.bytes, rsp+21, 4);
+    			printf("sof-imu: acc %d\t%d\t%d - gyro %d\t%d\t%d\n",
+    				ax.int_val, ay.int_val, az.int_val,
+    				gx.int_val, gy.int_val, gz.int_val);
 #endif
 		} else {
 			printf("rcv errno %d\r\n", len);

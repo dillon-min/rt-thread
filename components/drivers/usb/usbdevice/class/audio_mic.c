@@ -271,7 +271,7 @@ static struct uac_as_descriptor as_desc =
         USB_DYNAMIC | USB_DIR_IN,
         USB_EP_ATTR_ISOC,
         UAC_EP_MAX_PACKET_SIZE,
-        0x03,
+        0x01,
     },
     /* AS Endpoint Descriptor */
     {

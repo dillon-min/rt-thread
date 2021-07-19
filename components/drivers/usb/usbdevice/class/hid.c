@@ -347,7 +347,7 @@ const static struct uhid_comm_descriptor _hid_comm_desc =
         USB_DYNAMIC | USB_DIR_IN,
         USB_EP_ATTR_INT,
         0x40,
-        0x0A,
+        0x01,//0x0A,
     },
 
     /* Endpoint Descriptor OUT */
@@ -568,11 +568,26 @@ static rt_err_t _function_disable(ufunction_t func)
     return RT_EOK;
 }
 
+static rt_err_t _function_sof(ufunction_t func)
+{
+    struct hid_s *data;
+
+    RT_ASSERT(func != RT_NULL);
+    RT_ASSERT(func->device != RT_NULL);
+    data = (struct hid_s *) func->user_data;
+
+    if(data->parent.rx_indicate != RT_NULL)
+    {
+        data->parent.rx_indicate(&data->parent, 0);
+    }
+    return RT_EOK;
+}
+
 static struct ufunction_ops ops =
 {
     _function_enable,
     _function_disable,
-    RT_NULL,
+    _function_sof,
 };
 
 
@@ -629,6 +644,7 @@ static void hid_thread_entry(void* parameter)
     {
         if(rt_mq_recv(&hiddev->hid_mq, &report, sizeof(report),RT_WAITING_FOREVER) != RT_EOK )
             continue;
+        rt_kprintf("got hid in\n");
         HID_Report_Received(&report);
     }
 }

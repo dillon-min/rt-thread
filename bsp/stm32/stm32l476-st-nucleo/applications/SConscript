@@ -14,6 +14,7 @@ driver/param.c
 driver/rc4.c
 driver/event.c
 driver/utils.c
+driver/icm20603.c
 protocol/mcu.c
 protocol/mcu_cmd.c
 """)
