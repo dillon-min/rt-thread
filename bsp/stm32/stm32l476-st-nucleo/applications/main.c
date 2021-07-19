@@ -33,6 +33,7 @@ static struct rt_semaphore tx_sem_complete = {0};
 #define LED0_PIN    GET_PIN(C, 13)
 #define SCL_PIN    GET_PIN(E, 0)
 #define SDA_PIN    GET_PIN(E, 1)
+#define VSYNC_INT_PIN    GET_PIN(E, 10)
 
 rt_uint32_t g_heart_t2 = 0;
 
@@ -120,7 +121,6 @@ void HID_Report_Received(hid_report_t report)
 static rt_err_t sof(rt_device_t dev, rt_size_t size)
 {
     rt_sem_release(&sof_sem);
-
     return RT_EOK;
 }
 icm20603_device_t imu_dev;
@@ -156,6 +156,12 @@ static void imu_thread_entry(void *parameter)
 	}
     }
 }
+
+static void vsync_isr(void *args)
+{
+//    rt_kprintf("vsync \n");
+}
+
 static int generic_hid_init(void)
 {
 	int err = 0;
@@ -178,6 +184,9 @@ static int generic_hid_init(void)
 	rt_device_set_tx_complete(hid_device, event_hid_in);
     	rt_device_set_rx_indicate(hid_device, sof);
     	rt_thread_t thread = rt_thread_create("imu", imu_thread_entry, RT_NULL, 1024, 25, 10);
+	rt_pin_mode(VSYNC_INT_PIN, PIN_MODE_INPUT_PULLUP);
+	rt_pin_attach_irq(VSYNC_INT_PIN, PIN_IRQ_MODE_RISING, vsync_isr, RT_NULL);
+	rt_pin_irq_enable(VSYNC_INT_PIN, RT_TRUE);
 
 	    if (thread != RT_NULL)
 	    {
@@ -188,9 +197,6 @@ static int generic_hid_init(void)
         	return RT_ERROR;
 	    }
 #if 0
-	rt_pin_mode(VSYNC_INT_PIN, PIN_MODE_INPUT_PULLUP);
-	rt_pin_attach_irq(VSYNC_INT_PIN, PIN_IRQ_MODE_RISING, vsync_isr, RT_NULL);
-	rt_pin_irq_enable(VSYNC_INT_PIN, RT_TRUE);
 	rt_thread_init(&usb_thread,
 			"hidd_app",
 			usb_thread_entry, hid_device,
@@ -215,7 +221,7 @@ int main(void)
     //timestamp_init();
     //protocol_init();
     generic_hid_init();
-//    vcom_init();
+    vcom_init();
     while (1)
     {
         rt_pin_write(LED0_PIN, PIN_HIGH);

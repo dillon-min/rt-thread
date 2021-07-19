@@ -222,4 +222,8 @@
 #define BSP_USING_I2C1
 #define BSP_I2C1_SCL_PIN 64
 #define BSP_I2C1_SDA_PIN 65
+
+#define BSP_USING_PWM1
+#define RT_USING_PWM
+#define BSP_USING_PWM1_CH1
 #endif

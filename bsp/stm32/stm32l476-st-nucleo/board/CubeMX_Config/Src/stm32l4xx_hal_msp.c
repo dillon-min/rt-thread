@@ -548,9 +548,25 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
 
   /* USER CODE END TIM17_MspInit 1 */
   }
+  else if(htim_base->Instance==TIM1)
+  {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+    __HAL_RCC_TIM1_CLK_ENABLE();
+    __HAL_RCC_GPIOE_CLK_ENABLE();
+    GPIO_InitStruct.Pin = GPIO_PIN_9;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF1_TIM1;
+    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+  }
 
 }
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim)
+{
+	HAL_TIM_Base_MspInit(htim);
+}
 /**
 * @brief TIM_Base MSP De-Initialization
 * This function freeze the hardware resources used in this example
@@ -591,6 +607,10 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
   /* USER CODE BEGIN TIM17_MspDeInit 1 */
 
   /* USER CODE END TIM17_MspDeInit 1 */
+  }
+  else if(htim_base->Instance==TIM1)
+  {
+    __HAL_RCC_TIM1_CLK_DISABLE();
   }
 
 }
