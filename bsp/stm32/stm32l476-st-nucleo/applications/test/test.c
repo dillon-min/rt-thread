@@ -21,6 +21,12 @@ typedef struct _int16_val {
 		uint8_t bytes[4];
 	};
 } int16_val;
+typedef struct _int64_val {
+	union {
+		int64_t int_val;
+		uint8_t bytes[8];
+	};
+} int64_val;
 int main(int argc, void* argv[])
 {
 	void *handle;
@@ -76,15 +82,18 @@ int main(int argc, void* argv[])
 					gyrof[3], gyrof[4], gyrof[5]);
 #else
 			int16_val ax, ay, az, gx, gy, gz;
+			int64_val ts, tsb;
 			memcpy(ax.bytes, rsp+1, 4);
 			memcpy(ay.bytes, rsp+5, 4);
 			memcpy(az.bytes, rsp+9, 4);
 			memcpy(gx.bytes, rsp+13, 4);
 			memcpy(gy.bytes, rsp+17, 4);
 			memcpy(gz.bytes, rsp+21, 4);
-    			printf("sof-imu: acc %d\t%d\t%d - gyro %d\t%d\t%d\n",
-    				ax.int_val, ay.int_val, az.int_val,
+			memcpy(ts.bytes, rsp+22, 8);
+    			printf("sof-imu(%ld - %d): acc %d\t%d\t%d - gyro %d\t%d\t%d\n",
+    				ts.int_val, ts.int_val - tsb.int_val, ax.int_val, ay.int_val, az.int_val,
     				gx.int_val, gy.int_val, gz.int_val);
+    			tsb.int_val = ts.int_val;
 #endif
 		} else {
 			printf("rcv errno %d\r\n", len);

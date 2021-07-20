@@ -237,10 +237,10 @@ static rt_err_t _init(rt_device_t device)
     HAL_NVIC_EnableIRQ(USBD_IRQ_TYPE);
 #if !defined(SOC_SERIES_STM32F1)
     HAL_PCDEx_SetRxFiFo(pcd, 0x80);
-    HAL_PCDEx_SetTxFiFo(pcd, 0, 0x10);
+    HAL_PCDEx_SetTxFiFo(pcd, 0, 0x40);
     HAL_PCDEx_SetTxFiFo(pcd, 1, 0x40);
-    HAL_PCDEx_SetTxFiFo(pcd, 2, 0x10);
-    HAL_PCDEx_SetTxFiFo(pcd, 3, 0x10);
+    HAL_PCDEx_SetTxFiFo(pcd, 2, 0x40);
+    HAL_PCDEx_SetTxFiFo(pcd, 3, 0x80);
     HAL_PCDEx_SetTxFiFo(pcd, 4, 0x40);
 #else
     HAL_PCDEx_PMAConfig(pcd, 0x00, PCD_SNG_BUF, 0x18);

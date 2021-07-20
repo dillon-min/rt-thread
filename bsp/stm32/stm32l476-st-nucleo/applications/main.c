@@ -149,6 +149,7 @@ static void imu_thread_entry(void *parameter)
     	memcpy(buf+13, gx.bytes, 4);
     	memcpy(buf+17, gy.bytes, 4);
     	memcpy(buf+21, gz.bytes, 4);
+    	read_ts_64(buf+22);
 	if (connect) {
 		if (rt_device_write(hid_device, 0x00, buf+1, 63) != 63)
 			rt_kprintf("hid out failed\r\n");
@@ -218,10 +219,11 @@ int main(void)
     if (!param_init())
         LOG_D("can't startup system\r\n");
     //rt_memlist_init();
-    //timestamp_init();
+    timestamp_init();
     //protocol_init();
+    //normal_timer_init();	
     generic_hid_init();
-    vcom_init();
+//    vcom_init();
     while (1)
     {
         rt_pin_write(LED0_PIN, PIN_HIGH);
