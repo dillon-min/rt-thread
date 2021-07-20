@@ -246,7 +246,7 @@ static rt_err_t mic_configure(struct rt_audio_device *audio, struct rt_audio_cap
             SAIA_Frequency_Set(caps->udata.config.samplerate);
             HAL_SAI_DMAStop(&SAI1B_Handler);
             SAIB_Channels_Set(caps->udata.config.channels);
-            //HAL_SAI_Transmit(&SAI1A_Handler, (uint8_t *)&zero_frame[0], 2, 0);
+            HAL_SAI_Transmit(&SAI1A_Handler, (uint8_t *)&zero_frame[0], 2, 0);
             HAL_SAI_Receive_DMA(&SAI1B_Handler, mic_dev->rx_fifo, RX_FIFO_SIZE / 2);
 
             /* save configs */
@@ -330,9 +330,9 @@ static rt_err_t mic_start(struct rt_audio_device *audio, int stream)
     if (stream == AUDIO_STREAM_RECORD)
     {
     	//rt_kprintf("mic start\r\n");
-        //wm8978_mic_enabled(mic_dev->i2c_bus, 1);
-        wm8978_record_start(mic_dev->i2c_bus);
-        //HAL_SAI_Transmit(&SAI1A_Handler, (uint8_t *)&zero_frame[0], 2, 0);
+        wm8978_mic_enabled(mic_dev->i2c_bus, 1);
+        //wm8978_record_start(mic_dev->i2c_bus);
+        HAL_SAI_Transmit(&SAI1A_Handler, (uint8_t *)&zero_frame[0], 2, 0);
         HAL_SAI_Receive_DMA(&SAI1B_Handler, mic_dev->rx_fifo, RX_FIFO_SIZE / 2);
     }
 
@@ -349,7 +349,7 @@ static rt_err_t mic_stop(struct rt_audio_device *audio, int stream)
     {
     	rt_kprintf("mic stop\r\n");
         HAL_SAI_DMAStop(&SAI1B_Handler);
-        //HAL_SAI_Abort(&SAI1A_Handler);
+        HAL_SAI_Abort(&SAI1A_Handler);
         wm8978_mic_enabled(mic_dev->i2c_bus, 0);
     }
 

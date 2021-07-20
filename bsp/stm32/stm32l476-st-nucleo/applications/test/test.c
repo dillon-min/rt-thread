@@ -90,6 +90,8 @@ int main(int argc, void* argv[])
 			memcpy(gy.bytes, rsp+17, 4);
 			memcpy(gz.bytes, rsp+21, 4);
 			memcpy(ts.bytes, rsp+22, 8);
+			printf("\033[1A");
+			printf("\033[K");
     			printf("sof-imu(%ld - %d): acc %d\t%d\t%d - gyro %d\t%d\t%d\n",
     				ts.int_val, ts.int_val - tsb.int_val, ax.int_val, ay.int_val, az.int_val,
     				gx.int_val, gy.int_val, gz.int_val);
