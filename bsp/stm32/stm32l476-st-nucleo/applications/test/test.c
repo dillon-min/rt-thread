@@ -38,6 +38,7 @@ int main(int argc, void* argv[])
 	uint8_t rsp[64];
 	int16_t acc[6], gyro[6];
 	float accf[6], gyrof[6];
+	int cnt = 0;
 
 	if (argc >= 2)
 		send = 1;
@@ -82,7 +83,7 @@ int main(int argc, void* argv[])
 					gyrof[3], gyrof[4], gyrof[5]);
 #else
 			int16_val ax, ay, az, gx, gy, gz;
-			int64_val ts, tsb;
+			int64_val ts, tsb, fps = {0};
 			memcpy(ax.bytes, rsp+1, 4);
 			memcpy(ay.bytes, rsp+5, 4);
 			memcpy(az.bytes, rsp+9, 4);
@@ -92,10 +93,14 @@ int main(int argc, void* argv[])
 			memcpy(ts.bytes, rsp+22, 8);
 			printf("\033[1A");
 			printf("\033[K");
-    			printf("sof-imu(%ld - %d): acc %d\t%d\t%d - gyro %d\t%d\t%d\n",
+    			cnt++;
+    			if (cnt == 1000) {
+    				printf("sof-imu(%ld - %d): acc %d\t%d\t%d - gyro %d\t%d\t%d\n",
     				ts.int_val, ts.int_val - tsb.int_val, ax.int_val, ay.int_val, az.int_val,
     				gx.int_val, gy.int_val, gz.int_val);
-    			tsb.int_val = ts.int_val;
+    				cnt = 0;
+    				tsb.int_val = ts.int_val;
+			}
 #endif
 		} else {
 			printf("rcv errno %d\r\n", len);
