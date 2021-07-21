@@ -31,8 +31,8 @@ static struct rt_semaphore tx_sem_complete = {0};
 
 /* defined the LED0 pin: PC13 */
 #define LED0_PIN    GET_PIN(C, 13)
-#define SCL_PIN    GET_PIN(E, 0)
-#define SDA_PIN    GET_PIN(E, 1)
+#define SCL_PIN    GET_PIN(C, 1)
+#define SDA_PIN    GET_PIN(C, 2)
 #define VSYNC_INT_PIN    GET_PIN(E, 10)
 
 rt_uint32_t g_heart_t2 = 0;
@@ -214,16 +214,18 @@ INIT_COMPONENT_EXPORT(fal_init);
 
 int main(void)
 {
+    rt_kprintf("hello world, scl %d sda %d\r\n",
+    		    SCL_PIN, SDA_PIN);
     /* set LED0 pin mode to output */
     rt_pin_mode(LED0_PIN, PIN_MODE_OUTPUT);
     if (!param_init())
-        LOG_D("can't startup system\r\n");
+        LOG_D("can't 2startup system\r\n");
     //rt_memlist_init();
     timestamp_init();
     //protocol_init();
     //normal_timer_init();	
     generic_hid_init();
-//    vcom_init();
+    vcom_init();
     while (1)
     {
         rt_pin_write(LED0_PIN, PIN_HIGH);

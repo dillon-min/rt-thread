@@ -220,8 +220,8 @@
 #define RT_USING_I2C
 #define RT_USING_I2C_BITOPS
 #define BSP_USING_I2C1
-#define BSP_I2C1_SCL_PIN 64
-#define BSP_I2C1_SDA_PIN 65
+#define BSP_I2C1_SCL_PIN 33//64
+#define BSP_I2C1_SDA_PIN 34//65
 
 #define BSP_USING_PWM1
 #define RT_USING_PWM
