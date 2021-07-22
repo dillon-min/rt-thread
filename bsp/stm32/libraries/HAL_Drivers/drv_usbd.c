@@ -84,9 +84,9 @@ void isoc_out_resume(PCD_HandleTypeDef *hpcd)
 {
   	USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
   	uint32_t USBx_BASE = (uint32_t)USBx;
-        USBx_OUTEP(0x01)->DOEPCTL |= USB_OTG_DOEPCTL_EPDIS;
-	HAL_PCD_EP_Flush(hpcd, 0x01);
-        USBx_OUTEP(0x01)->DOEPCTL &= ~USB_OTG_DOEPCTL_EPDIS;
+        USBx_OUTEP(0x03)->DOEPCTL |= USB_OTG_DOEPCTL_EPDIS;
+	HAL_PCD_EP_Flush(hpcd, 0x03);
+        USBx_OUTEP(0x03)->DOEPCTL &= ~USB_OTG_DOEPCTL_EPDIS;
 }
 void HAL_PCD_ISOOUTIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
@@ -97,11 +97,11 @@ void isoc_in_resume(PCD_HandleTypeDef *hpcd)
 {
   	USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
   	uint32_t USBx_BASE = (uint32_t)USBx;
-        USBx_INEP(0x01)->DIEPCTL |= USB_OTG_DIEPCTL_SNAK;
-        USBx_INEP(0x01)->DIEPCTL |= USB_OTG_DIEPCTL_EPDIS;
-	HAL_PCD_EP_Flush(hpcd, 0x81);
+        USBx_INEP(0x03)->DIEPCTL |= USB_OTG_DIEPCTL_SNAK;
+        USBx_INEP(0x03)->DIEPCTL |= USB_OTG_DIEPCTL_EPDIS;
+	HAL_PCD_EP_Flush(hpcd, 0x83);
         //USBx_INEP(0x03)->DIEPCTL &= ~USB_OTG_DIEPCTL_SNAK;
-        USBx_INEP(0x01)->DIEPCTL &= ~USB_OTG_DIEPCTL_EPDIS;
+        USBx_INEP(0x03)->DIEPCTL &= ~USB_OTG_DIEPCTL_EPDIS;
 }
 void HAL_PCD_ISOINIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
@@ -237,11 +237,11 @@ static rt_err_t _init(rt_device_t device)
     HAL_NVIC_EnableIRQ(USBD_IRQ_TYPE);
 #if !defined(SOC_SERIES_STM32F1)
     HAL_PCDEx_SetRxFiFo(pcd, 0x80);
-    HAL_PCDEx_SetTxFiFo(pcd, 0, 0x40);
-    HAL_PCDEx_SetTxFiFo(pcd, 1, 0x40);
-    HAL_PCDEx_SetTxFiFo(pcd, 2, 0x40);
-    HAL_PCDEx_SetTxFiFo(pcd, 3, 0x80);
-    HAL_PCDEx_SetTxFiFo(pcd, 4, 0x40);
+    HAL_PCDEx_SetTxFiFo(pcd, 0, 0x10);
+    HAL_PCDEx_SetTxFiFo(pcd, 1, 0x10);
+    HAL_PCDEx_SetTxFiFo(pcd, 2, 0x10);
+    HAL_PCDEx_SetTxFiFo(pcd, 3, 0x40);
+    HAL_PCDEx_SetTxFiFo(pcd, 4, 0x10);
 #else
     HAL_PCDEx_PMAConfig(pcd, 0x00, PCD_SNG_BUF, 0x18);
     HAL_PCDEx_PMAConfig(pcd, 0x80, PCD_SNG_BUF, 0x58);

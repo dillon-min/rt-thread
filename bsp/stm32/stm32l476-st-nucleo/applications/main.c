@@ -225,7 +225,7 @@ int main(void)
     //protocol_init();
     //normal_timer_init();	
     generic_hid_init();
-    vcom_init();
+//    vcom_init();
     while (1)
     {
         rt_pin_write(LED0_PIN, PIN_HIGH);
