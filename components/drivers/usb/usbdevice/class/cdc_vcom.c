@@ -972,6 +972,7 @@ int rt_usbd_vcom_class_register(void)
     rt_usbd_class_register(&vcom_class);
     return 0;
 }
-INIT_PREV_EXPORT(rt_usbd_vcom_class_register);
+//INIT_PREV_EXPORT(rt_usbd_vcom_class_register);
+RTM_EXPORT(rt_usbd_vcom_class_register);
 
 #endif

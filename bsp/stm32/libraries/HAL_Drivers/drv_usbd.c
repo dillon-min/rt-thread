@@ -17,6 +17,7 @@
 #include <string.h>
 #include <drv_config.h>
 
+static uint8_t flag = 0x01;
 static uint32_t cnt = 0;
 static PCD_HandleTypeDef _stm_pcd;
 static struct udcd _stm_udc;
@@ -62,7 +63,8 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
     }
     else
     {
-    	  //  rt_kprintf("host get data 0x%x, %d\r\n", epnum, hpcd->IN_ep[epnum].xfer_count);
+    	//if (epnum == 0x02)
+    	//    rt_kprintf("host get data 0x%x, %d\r\n", epnum, hpcd->IN_ep[epnum].xfer_count);
         rt_usbd_ep_in_handler(&_stm_udc, 0x80 | epnum, hpcd->IN_ep[epnum].xfer_count);
     }
 }
@@ -111,7 +113,9 @@ void HAL_PCD_ISOINIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 	cnt++;
 	if (cnt > 3) {
 		cnt = 0;
+		flag = 0;
 		isoc_in_resume(hpcd);
+		flag = 1;
 	}
 }
 
@@ -202,6 +206,7 @@ static rt_size_t _ep_read_prepare(rt_uint8_t address, void *buffer, rt_size_t si
 static rt_size_t _ep_write(rt_uint8_t address, void *buffer, rt_size_t size)
 {
     //rt_kprintf("send 0x%x usb %d data\r\n", address, size);
+    //if (address != 0x81 || (address == 0x81 && flag))
     HAL_PCD_EP_Transmit(&_stm_pcd, address, buffer, size);
     return size;
 }
@@ -245,7 +250,8 @@ static rt_err_t _init(rt_device_t device)
     HAL_PCDEx_SetRxFiFo(pcd, 0x80);
     HAL_PCDEx_SetTxFiFo(pcd, 0, 0x10);
     HAL_PCDEx_SetTxFiFo(pcd, 1, 0x80);
-    HAL_PCDEx_SetTxFiFo(pcd, 2, 0x40);
+    HAL_PCDEx_SetTxFiFo(pcd, 2, 0x10);
+    HAL_PCDEx_SetTxFiFo(pcd, 3, 0x10);
 #else
     HAL_PCDEx_PMAConfig(pcd, 0x00, PCD_SNG_BUF, 0x18);
     HAL_PCDEx_PMAConfig(pcd, 0x80, PCD_SNG_BUF, 0x58);
@@ -308,6 +314,7 @@ int stm_usbd_register(void)
     rt_usbd_uac_mic_class_register();
     rt_usbd_uac_speaker_class_register();
     rt_usbd_hid_class_register();
+    rt_usbd_vcom_class_register();
     rt_usb_device_init();
     return RT_EOK;
 }

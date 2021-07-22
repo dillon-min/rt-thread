@@ -68,6 +68,7 @@ int vcom_init(void)
 static rt_err_t event_hid_in(rt_device_t dev, void *buffer)
 {
 	//notify_event(EVENT_ST2OV);
+	//rt_kprintf("event hid in\r\n");
 	rt_sem_release(&tx_sem_complete);
 	return RT_EOK;
 }
@@ -135,9 +136,13 @@ static void imu_thread_entry(void *parameter)
 {
 	int16_val ax, ay, az, gx, gy, gz;
 	rt_uint8_t buf[64];
+	static uint8_t imu_cnt = 0;
     while (1)
     {
         rt_sem_take(&sof_sem, RT_WAITING_FOREVER);
+        imu_cnt++;
+        if (imu_cnt == 1) {
+        	imu_cnt = 0;
         icm20603_get_accel(imu_dev, &ax.int_val, &ay.int_val, &az.int_val,
         		&gx.int_val, &gy.int_val, &gz.int_val);
     	//rt_kprintf("sof-imu: acc %04d,%04d,%04d - gyro %04d,%04d,%04d\n",
@@ -151,13 +156,15 @@ static void imu_thread_entry(void *parameter)
     	memcpy(buf+17, gy.bytes, 4);
     	memcpy(buf+21, gz.bytes, 4);
     	read_ts_64(buf+22);
+    	//connect = 0;
 	if (connect) {
 		if (rt_device_write(hid_device, 0x00, buf+1, 63) != 63)
 			rt_kprintf("hid out failed\r\n");
-	        if (rt_sem_take(&tx_sem_complete, RT_TICK_PER_SECOND / 1000) != RT_EOK) {
+	        if (rt_sem_take(&tx_sem_complete, RT_WAITING_FOREVER/*RT_TICK_PER_SECOND/100*/) != RT_EOK) {
 	        	rt_kprintf("hid send failed\r\n");
 	        	connect = false;
 		}
+	}
 	}
     }
 }
@@ -184,7 +191,7 @@ static int generic_hid_init(void)
 
     	rt_sem_init(&sof_sem, "sof_sem", 0, RT_IPC_FLAG_FIFO);
 	//rt_event_init(&light_event, "event", RT_IPC_FLAG_FIFO);
-	rt_sem_init(&tx_sem_complete, "tx_complete_sem_hid", 1, RT_IPC_FLAG_FIFO);
+	rt_sem_init(&tx_sem_complete, "tx_complete_sem_hid", 0, RT_IPC_FLAG_FIFO);
 	imu_dev = icm20603_init();
 	rt_device_set_tx_complete(hid_device, event_hid_in);
     	rt_device_set_rx_indicate(hid_device, sof);
@@ -229,7 +236,7 @@ int main(void)
     //protocol_init();
     //normal_timer_init();	
     generic_hid_init();
-//    vcom_init();
+    vcom_init();
     while (1)
     {
         rt_pin_write(LED0_PIN, PIN_HIGH);
