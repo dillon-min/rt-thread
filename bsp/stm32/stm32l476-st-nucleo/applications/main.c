@@ -141,7 +141,8 @@ static void imu_thread_entry(void *parameter)
         icm20603_get_accel(imu_dev, &ax.int_val, &ay.int_val, &az.int_val,
         		&gx.int_val, &gy.int_val, &gz.int_val);
     	//rt_kprintf("sof-imu: acc %04d,%04d,%04d - gyro %04d,%04d,%04d\n",
-    	//		ax, ay, az, gx, gy, gz);
+    	//		ax.int_val, ay.int_val, az.int_val,
+    	//		gx.int_val, gy.int_val, gz.int_val);
     	buf[0] = 0x00;
     	memcpy(buf+1, ax.bytes, 4);
     	memcpy(buf+5, ay.bytes, 4);
@@ -153,7 +154,10 @@ static void imu_thread_entry(void *parameter)
 	if (connect) {
 		if (rt_device_write(hid_device, 0x00, buf+1, 63) != 63)
 			rt_kprintf("hid out failed\r\n");
-	        rt_sem_take(&tx_sem_complete, RT_WAITING_FOREVER);
+	        if (rt_sem_take(&tx_sem_complete, RT_TICK_PER_SECOND / 1000) != RT_EOK) {
+	        	rt_kprintf("hid send failed\r\n");
+	        	connect = false;
+		}
 	}
     }
 }

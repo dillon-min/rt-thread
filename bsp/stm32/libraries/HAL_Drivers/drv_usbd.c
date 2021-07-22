@@ -23,13 +23,13 @@ static struct udcd _stm_udc;
 static struct ep_id _ep_pool[] =
 {
     {0x0,  USB_EP_ATTR_CONTROL,     USB_DIR_INOUT,  64, ID_ASSIGNED  },
+    {0x1,  USB_EP_ATTR_ISOC,        USB_DIR_IN,     64, ID_UNASSIGNED},
+    {0x1,  USB_EP_ATTR_ISOC,        USB_DIR_OUT,    64, ID_UNASSIGNED},
+    {0x2,  USB_EP_ATTR_INT,         USB_DIR_IN,     64, ID_UNASSIGNED},
+    {0x2,  USB_EP_ATTR_INT,         USB_DIR_OUT,     64, ID_UNASSIGNED},
+    {0x3,  USB_EP_ATTR_BULK,        USB_DIR_IN,    64, ID_UNASSIGNED},
+    {0x3,  USB_EP_ATTR_BULK,        USB_DIR_OUT,     64, ID_UNASSIGNED},
     {0x4,  USB_EP_ATTR_INT,         USB_DIR_IN,    64, ID_UNASSIGNED},
-    {0x1,  USB_EP_ATTR_INT,         USB_DIR_IN,     64, ID_UNASSIGNED},
-    {0x1,  USB_EP_ATTR_INT,         USB_DIR_OUT,     64, ID_UNASSIGNED},
-    {0x2,  USB_EP_ATTR_BULK,        USB_DIR_IN,    64, ID_UNASSIGNED},
-    {0x2,  USB_EP_ATTR_BULK,        USB_DIR_OUT,     64, ID_UNASSIGNED},
-    {0x3,  USB_EP_ATTR_ISOC,        USB_DIR_IN,     64, ID_UNASSIGNED},
-    {0x3,  USB_EP_ATTR_ISOC,        USB_DIR_OUT,    64, ID_UNASSIGNED},
     {0xFF, USB_EP_ATTR_TYPE_MASK,   USB_DIR_MASK,   0,  ID_ASSIGNED  },
 };
 
@@ -85,9 +85,9 @@ void isoc_out_resume(PCD_HandleTypeDef *hpcd)
 {
   	USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
   	uint32_t USBx_BASE = (uint32_t)USBx;
-        USBx_OUTEP(0x03)->DOEPCTL |= USB_OTG_DOEPCTL_EPDIS;
-	HAL_PCD_EP_Flush(hpcd, 0x03);
-        USBx_OUTEP(0x03)->DOEPCTL &= ~USB_OTG_DOEPCTL_EPDIS;
+        USBx_OUTEP(0x01)->DOEPCTL |= USB_OTG_DOEPCTL_EPDIS;
+	HAL_PCD_EP_Flush(hpcd, 0x01);
+        USBx_OUTEP(0x01)->DOEPCTL &= ~USB_OTG_DOEPCTL_EPDIS;
 }
 void HAL_PCD_ISOOUTIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
@@ -98,11 +98,11 @@ void isoc_in_resume(PCD_HandleTypeDef *hpcd)
 {
   	USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
   	uint32_t USBx_BASE = (uint32_t)USBx;
-        USBx_INEP(0x03)->DIEPCTL |= USB_OTG_DIEPCTL_SNAK;
-        USBx_INEP(0x03)->DIEPCTL |= USB_OTG_DIEPCTL_EPDIS;
-	HAL_PCD_EP_Flush(hpcd, 0x83);
-        //USBx_INEP(0x03)->DIEPCTL &= ~USB_OTG_DIEPCTL_SNAK;
-        USBx_INEP(0x03)->DIEPCTL &= ~USB_OTG_DIEPCTL_EPDIS;
+        USBx_INEP(0x01)->DIEPCTL |= USB_OTG_DIEPCTL_SNAK;
+        USBx_INEP(0x01)->DIEPCTL |= USB_OTG_DIEPCTL_EPDIS;
+	HAL_PCD_EP_Flush(hpcd, 0x81);
+        //USBx_INEP(0x01)->DIEPCTL &= ~USB_OTG_DIEPCTL_SNAK;
+        USBx_INEP(0x01)->DIEPCTL &= ~USB_OTG_DIEPCTL_EPDIS;
 }
 
 void HAL_PCD_ISOINIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
@@ -244,10 +244,8 @@ static rt_err_t _init(rt_device_t device)
 #if !defined(SOC_SERIES_STM32F1)
     HAL_PCDEx_SetRxFiFo(pcd, 0x80);
     HAL_PCDEx_SetTxFiFo(pcd, 0, 0x10);
-    HAL_PCDEx_SetTxFiFo(pcd, 1, 0x10);
-    HAL_PCDEx_SetTxFiFo(pcd, 2, 0x10);
-    HAL_PCDEx_SetTxFiFo(pcd, 3, 0x80);
-    HAL_PCDEx_SetTxFiFo(pcd, 4, 0x10);
+    HAL_PCDEx_SetTxFiFo(pcd, 1, 0x80);
+    HAL_PCDEx_SetTxFiFo(pcd, 2, 0x40);
 #else
     HAL_PCDEx_PMAConfig(pcd, 0x00, PCD_SNG_BUF, 0x18);
     HAL_PCDEx_PMAConfig(pcd, 0x80, PCD_SNG_BUF, 0x58);
@@ -307,6 +305,9 @@ int stm_usbd_register(void)
     _stm_udc.device_is_hs = RT_TRUE;
 #endif
     rt_device_register((rt_device_t)&_stm_udc, "usbd", 0);
+    rt_usbd_uac_mic_class_register();
+    rt_usbd_uac_speaker_class_register();
+    rt_usbd_hid_class_register();
     rt_usb_device_init();
     return RT_EOK;
 }

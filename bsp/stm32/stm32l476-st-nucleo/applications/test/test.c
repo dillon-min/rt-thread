@@ -53,7 +53,7 @@ int main(int argc, void* argv[])
 	memset(cmd, 0x33, 64);
 	cmd[62] = '\r';
 	cmd[63] = '\n';
-	rcv_len = hid_xfer(handle, 0x01, cmd, 64, 1000);
+	rcv_len = hid_xfer(handle, 0x02, cmd, 64, 1000);
 	
 	while(1) {
 		len = hid_xfer(handle, atoi(argv[2]), rsp, 64, 1000);

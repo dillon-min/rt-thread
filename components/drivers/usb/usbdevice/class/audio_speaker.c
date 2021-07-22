@@ -579,4 +579,5 @@ int rt_usbd_uac_speaker_class_register(void)
     rt_usbd_class_register(&uac_speaker_class);
     return 0;
 }
-INIT_PREV_EXPORT(rt_usbd_uac_speaker_class_register);
+//INIT_PREV_EXPORT(rt_usbd_uac_speaker_class_register);
+RTM_EXPORT(rt_usbd_uac_speaker_class_register);
