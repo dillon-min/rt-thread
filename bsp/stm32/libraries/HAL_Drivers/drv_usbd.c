@@ -17,6 +17,7 @@
 #include <string.h>
 #include <drv_config.h>
 
+static uint32_t cnt = 0;
 static PCD_HandleTypeDef _stm_pcd;
 static struct udcd _stm_udc;
 static struct ep_id _ep_pool[] =
@@ -103,10 +104,15 @@ void isoc_in_resume(PCD_HandleTypeDef *hpcd)
         //USBx_INEP(0x03)->DIEPCTL &= ~USB_OTG_DIEPCTL_SNAK;
         USBx_INEP(0x03)->DIEPCTL &= ~USB_OTG_DIEPCTL_EPDIS;
 }
+
 void HAL_PCD_ISOINIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
 	//rt_kprintf("got 0x%x iso in incomplete call back\r\n", epnum);
-	//isoc_in_resume(hpcd);
+	cnt++;
+	if (cnt > 3) {
+		cnt = 0;
+		isoc_in_resume(hpcd);
+	}
 }
 
 void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
@@ -196,7 +202,7 @@ static rt_size_t _ep_read_prepare(rt_uint8_t address, void *buffer, rt_size_t si
 static rt_size_t _ep_write(rt_uint8_t address, void *buffer, rt_size_t size)
 {
     //rt_kprintf("send 0x%x usb %d data\r\n", address, size);
-    	HAL_PCD_EP_Transmit(&_stm_pcd, address, buffer, size);
+    HAL_PCD_EP_Transmit(&_stm_pcd, address, buffer, size);
     return size;
 }
 
@@ -240,7 +246,7 @@ static rt_err_t _init(rt_device_t device)
     HAL_PCDEx_SetTxFiFo(pcd, 0, 0x10);
     HAL_PCDEx_SetTxFiFo(pcd, 1, 0x10);
     HAL_PCDEx_SetTxFiFo(pcd, 2, 0x10);
-    HAL_PCDEx_SetTxFiFo(pcd, 3, 0x40);
+    HAL_PCDEx_SetTxFiFo(pcd, 3, 0x80);
     HAL_PCDEx_SetTxFiFo(pcd, 4, 0x10);
 #else
     HAL_PCDEx_PMAConfig(pcd, 0x00, PCD_SNG_BUF, 0x18);
